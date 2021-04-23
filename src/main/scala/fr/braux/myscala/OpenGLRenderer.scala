@@ -1,8 +1,7 @@
 package fr.braux.myscala
 
 
-import fr.braux.myscala.Plot.Setting._
-import fr.braux.myscala.Plot._
+import fr.braux.myscala.Plotlib._
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -10,21 +9,28 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11._
 import org.slf4j.LoggerFactory
 
-class GLRenderer private extends Renderer {
-  import GLRenderer._
+class OpenGLRenderer private extends Renderer {
+  import OpenGLRenderer._
 
   override type Texture = GlTexture
 
   private var window: Long = 0L
+  private var refresh = true
+  private var render: () => Unit = () => {}
+  private var _display = Display(400, 400, Point(-1, -1, -1), Point(1, 1, 1))
 
-  override def init(title: String, params: Map[Setting.Value, Int] =  Map.empty): Unit = {
+  override def display: Display = _display
+
+  override def init(): Unit = {
     assert(isReady)
-    window = Option(glfwCreateWindow(params.getOrElse(Width, 400), params.getOrElse(Height, 400), title, 0, 0)).
+    window = Option(glfwCreateWindow(display.width, display.height, "title", 0, 0)).
       getOrElse(throw new IllegalStateException("Unable to create window"))
 
-    glfwSetKeyCallback(window, (w, key, _, action, _) =>
-      if ((key == GLFW_KEY_ESCAPE) && (action == GLFW_RELEASE))
-        glfwSetWindowShouldClose(w, true))
+    glfwSetKeyCallback(window, (w, key, _, action, _) => (key, action) match {
+      case (GLFW_KEY_ESCAPE, GLFW_RELEASE) => glfwSetWindowShouldClose(w, true)
+      case (GLFW_KEY_Z, GLFW_RELEASE) => zoom(0.5f)
+      case _ =>
+    })
 
     glfwMakeContextCurrent(window)
     glfwSwapInterval(1)
@@ -32,6 +38,12 @@ class GLRenderer private extends Renderer {
     GL.createCapabilities()
     glfwShowWindow(window)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+  }
+
+  private def zoom(factor: Float): Unit = {
+    _display = display.zoom(factor)
+    render()
+    refresh = true
   }
 
   override def close(): Unit = {
@@ -46,8 +58,11 @@ class GLRenderer private extends Renderer {
 
   override def show(wait: Boolean = true): Unit = {
     var running = wait
-    glfwSwapBuffers(window)
     while (running) {
+      if (refresh) {
+        glfwSwapBuffers(window)
+        refresh = false
+      }
       glfwPollEvents()
       if (glfwWindowShouldClose(this.window))
         running = false
@@ -67,23 +82,24 @@ class GLRenderer private extends Renderer {
 
   override def quad(a: Point, b: Point, c: Point, d: Point): Unit = ???
 
-  override def lines(points: Iterable[Point]): Unit = {
-    glBegin(GL_LINE_STRIP)
-    points.foreach(p => glVertex3f(p.x, p.y, p.z))
-    glEnd()
+  override def lines(provider: PointProvider): Unit = {
+    render = () => {
+      glBegin(GL_LINE_STRIP)
+      provider.getPoints(display).foreach(p => glVertex3f(p.x, p.y, p.z))
+      glEnd()
+    }
+    render()
   }
 
   override def load(filePath: String): GlTexture = ???
 
   override def use(t: GlTexture): Unit = ???
 
-  override val corners: (Point, Point) = (Point(-1,- 1,-1), Point(1, 1, 1))
-
 
 }
 
-object GLRenderer {
-  def apply() = new GLRenderer()
+object OpenGLRenderer {
+  def apply() = new OpenGLRenderer()
 
   private lazy val logger = LoggerFactory.getLogger(getClass)
 

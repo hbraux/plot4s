@@ -1,18 +1,25 @@
 package fr.braux.myscala
 
-import fr.braux.myscala.Plot.Renderer
 
-import scala.language.implicitConversions
+import fr.braux.myscala.Plotlib._
+import fr.braux.myscala.Plotter._
+
+trait Plotting  {
 
 
-trait Plotting {
+  private var plotApi: PlotConst = PlotApiOpenGl
 
-  lazy val plotter: Plot = new Plot {
-    override val rdr: Renderer = GLRenderer()
+  def useApi(api: PlotConst): Unit = plotApi = api
+
+  lazy val plotter: Plotter = new Plotter {
+    override val rdr: Renderer = plotApi match {
+      case PlotApiOpenGl => OpenGLRenderer()
+      case PlotApiConsole => ConsoleRenderer()
+    }
   }
 
   class PlottableFunction(f: Double => Double) {
-    def plot(): Unit = plotter.plotGraph(f)
+    def plot(params: PlotParam*): Unit = plotter.plotGraph(new MathFunctionPointProvider(f), params)
   }
 
   implicit def convertToPlottable(f: Double => Double): PlottableFunction = new PlottableFunction(f)
