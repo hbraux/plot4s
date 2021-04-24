@@ -14,8 +14,8 @@ object Plotlib  {
   case class Point(x: Float, y: Float, z: Float = 0f)
 
   /**
-   * Display provides both information about the Window being displayed and the 2D/3D space that
-   * is rendered within this window (pmin / pmax are left-bottom-front / top-right-back coordinates)
+   * Display provides both information about the Window being displayed and the 2D or 3D space that
+   * is rendered by this window (pmin / pmax are left-bottom-front / top-right-back coordinates)
    */
   case class Display(width: Int, height: Int, pmin: Point, pmax: Point) {
     def zoom(f: Float): Display = {
@@ -45,12 +45,12 @@ object Plotlib  {
   /**
    *  Constants, which their associated value types when
    */
-  import ValueType._
-  sealed class PlotConst(vt: ValueType)
+  import PlotValueType._
+  sealed class PlotConst(val valueType: PlotValueType)
 
   // Supported APIs
-  case object PlotApiOpenGl extends PlotConst(NoValue)
-  case object PlotApiConsole extends PlotConst(NoValue)
+  case object PlotApiOpenGl extends PlotConst(BoolValue)
+  case object PlotApiConsole extends PlotConst(BoolValue)
 
   // Window Parameters
   case object PlotWindowTitle extends PlotConst(StringValue)
@@ -60,15 +60,44 @@ object Plotlib  {
   case object PlotLineColor extends PlotConst(ColorValue)
   case object PlotLineWidth extends PlotConst(FloatValue)
 
+  // Keys
+  case object PlotKeyEscape extends PlotConst(NoValue)
+  case object PlotKeySpace extends PlotConst(NoValue)
+
   /**
    * A Parameter is a tuple Constant / Value; the value will be matched against the expected value type
    */
   type PlotParam = (PlotConst, Any)
 
+  case class PlotSettings(settings: Map[PlotConst, Any]) {
+    def get[A](c: PlotConst, orElse: A): A = {
+      settings.get(c) match {
+        case Some(v: A) => v
+        case _ => orElse
+      }
+    }
+  }
 
+  object PlotSettings {
+    def apply(params: Seq[PlotParam] = Seq.empty): PlotSettings = {
+      params.forall { p =>
+        (p._1.valueType, p._2) match {
+          case (StringValue, x: String) => true
+          case (IntValue, x: Int) => true
+          case (FloatValue, x: Float) => true
+          case (ColorValue, x: Color) => true
+          case (BoolValue, x: Boolean) => true
+          case (ConstValue, x: PlotConst) => true
+          case (_, NoValue) => throw new IllegalArgumentException(s"${p._1} is not a parameter")
+          case _ => throw new IllegalArgumentException(s"Expecting a type ${p._2} for ${p._1}")
+        }
+      }
+      PlotSettings(params.toMap)
+    }
+  }
 }
 
-object ValueType extends Enumeration {
-  type ValueType = Value
-  val NoValue, StringValue, IntValue, FloatValue, ColorValue = Value
+object PlotValueType extends Enumeration {
+  type PlotValueType = Value
+  val NoValue, StringValue, IntValue, FloatValue, BoolValue, ConstValue, ColorValue = Value
 }

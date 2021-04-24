@@ -6,7 +6,7 @@ import fr.braux.myscala.Plotlib._
 
 class Plotspec extends  WordSpec with Matchers with Plotting {
 
-  useApi(PlotApiOpenGl)
+  plotSettings(PlotApiOpenGl -> true, PlotWindowWidth -> 400, PlotWindowHeight -> 400)
 
   "Plot" should {
     "plot a graph" in {

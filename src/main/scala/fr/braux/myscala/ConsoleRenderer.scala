@@ -7,8 +7,6 @@ class ConsoleRenderer private extends Renderer {
 
   override type Texture = Char
 
-  override def init(): Unit = ???
-
   override def color(c: Color): Unit = ???
 
   override def point(a: Point): Unit = ???
@@ -25,13 +23,16 @@ class ConsoleRenderer private extends Renderer {
 
   override def use(t: Texture): Unit = ???
 
-  override def show(wait: Boolean): Unit = ???
-
   override def display: Display = ???
 
-  override def lines(provider: PointProvider): Unit = ???
+  override def refresh(): Unit = ???
+
+  override def lines(points: Iterable[Point]): Unit = ???
+
+  override def nextKeyEvent(): Option[PlotConst] = ???
 }
 
 object ConsoleRenderer {
-  def apply() = new ConsoleRenderer()
+
+  def apply(settings: PlotSettings): Renderer = new ConsoleRenderer()
 }

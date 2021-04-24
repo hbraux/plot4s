@@ -7,17 +7,29 @@ import fr.braux.myscala.Plotlib._
  */
 abstract class Plotter {
 
-  val rdr: Renderer
+  val factory: RendererFactory
+  lazy val rdr: Renderer = factory.instance
 
   def plotGraph(provider: PointProvider, params: Seq[PlotParam]): Unit = {
-    rdr.init()
-    rdr.lines(provider)
-    rdr.show()
+    rdr.lines(provider.getPoints(rdr.display))
+    rdr.refresh()
+    waitForExit()
+  }
+
+  private def waitForExit(): Unit = {
+    var waiting = true
+    while (waiting) {
+      rdr.nextKeyEvent() match {
+        case Some(k) if k == PlotKeyEscape => waiting = false
+        case _ =>
+      }
+    }
+    rdr.close()
   }
 }
 
 object Plotter {
-  class MathFunctionPointProvider(f: Double => Double) extends PointProvider {
+  class FunctionPointProvider(f: Double => Double) extends PointProvider {
     // generate 1 point per horizontal pixel
     override def getPoints(display: Display): Seq[Point] = (0 to display.width).map { n =>
       val x: Float = display.pmin.x + (display.pmax.x - display.pmin.x) * n / display.width
