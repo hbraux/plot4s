@@ -13,9 +13,9 @@ class ConsoleRenderer private extends Renderer {
 
   override def line(a: Point, b: Point): Unit = ???
 
-  override def triangle(a: Point, b: Point, c: Point): Unit = ???
+  override def triangle(a: Point, b: Point, c: Point): Unit = {} // not supported
 
-  override def quad(a: Point, b: Point, c: Point, d: Point): Unit = ???
+  override def quad(a: Point, b: Point, c: Point, d: Point): Unit = {} // not supported
 
   override def close(): Unit = ???
 
@@ -29,7 +29,9 @@ class ConsoleRenderer private extends Renderer {
 
   override def lines(points: Iterable[Point]): Unit = ???
 
-  override def nextKeyEvent(): Option[PlotConst] = ???
+  override def lineWidth(w: Float): Unit = {} // not supported
+
+  override def nextEvent(): PlotEvent = ???
 }
 
 object ConsoleRenderer {

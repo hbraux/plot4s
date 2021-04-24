@@ -14,13 +14,13 @@ trait Plotting  {
   def plotSettings(params: PlotParam*): Unit =  settings = PlotSettings(params)
 
   lazy val plotter: Plotter = new Plotter {
-    override val factory: RendererFactory = new RendererFactory() {
-      override val instance: Renderer = if (settings.get(PlotApiConsole, false)) ConsoleRenderer(settings) else OpenGLRenderer(settings)
+    override val factory: RendererFactory = new RendererFactory {
+      override val get: Renderer = if (settings.get(PlotApiConsole, false)) ConsoleRenderer(settings) else OpenGLRenderer(settings)
     }
   }
 
   class PlottableFunction(f: Double => Double) {
-    def plot(params: PlotParam*): Unit = plotter.plotGraph(new FunctionPointProvider(f), params)
+    def plot(params: PlotParam*): Unit = plotter.withSettings(params).graph(new FunctionPointProvider(f))
   }
 
   implicit def convertToPlottable(f: Double => Double): PlottableFunction = new PlottableFunction(f)

@@ -16,11 +16,10 @@ class OpenGLRenderer private (val display: Display, window: Long) extends Render
 
   override type Texture = GlTexture
 
-  private val keysQueue = new mutable.Queue[PlotConst]()
+  private val eventsQueue = new mutable.Queue[PlotEvent]()
 
-  // window callback enqueue Key released events
-  glfwSetKeyCallback(window, (w, key, _, action, _) => (action, keyMappings.get(key)) match {
-    case (GLFW_RELEASE, Some(k)) => keysQueue.enqueue(k)
+  glfwSetKeyCallback(window, (w, key, _, action, _) => (action, keysMapping.get(key)) match {
+    case (GLFW_RELEASE, Some(k)) => eventsQueue.enqueue(k)
     case _ =>
   })
 
@@ -31,12 +30,14 @@ class OpenGLRenderer private (val display: Display, window: Long) extends Render
       glfwSetErrorCallback(null).free()
     }
 
-  override def refresh(): Unit = glfwSwapBuffers(window)
+  override def refresh(): Unit = {
+    glfwSwapBuffers(window)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+  }
 
-
-  override def nextKeyEvent(): Option[PlotConst] = {
+  override def nextEvent(): PlotEvent = {
     glfwPollEvents()
-    if (keysQueue.isEmpty) None else Some(keysQueue.dequeue())
+    if (eventsQueue.isEmpty) PlotEventNone else eventsQueue.dequeue()
   }
 
   override def color(c: Color): Unit = {
@@ -56,6 +57,8 @@ class OpenGLRenderer private (val display: Display, window: Long) extends Render
     glVertex3f(b.x, b.y, b.z)
     glEnd()
   }
+
+  override def lineWidth(w: Float): Unit =  glLineWidth(w)
 
   override def triangle(a: Point, b: Point, c: Point): Unit = {
     glBegin(GL_TRIANGLES)
@@ -89,7 +92,13 @@ class OpenGLRenderer private (val display: Display, window: Long) extends Render
 object OpenGLRenderer  {
   private lazy val logger = LoggerFactory.getLogger(getClass)
 
-  private val keyMappings: Map[Int, PlotConst] = Map(GLFW_KEY_ESCAPE -> PlotKeyEscape, GLFW_KEY_SPACE -> PlotKeySpace)
+  private val keysMapping = Map(
+    GLFW_KEY_ESCAPE -> PlotEventEscape,
+    GLFW_KEY_SPACE -> PlotEventSpace,
+    GLFW_KEY_LEFT -> PlotEventSpace,
+    GLFW_KEY_RIGHT -> PlotEventRight,
+    GLFW_KEY_UP -> PlotEventUp,
+    GLFW_KEY_DOWN -> PlotEventDown)
 
   def apply(settings: PlotSettings): Renderer = {
     if (!glfwInit)

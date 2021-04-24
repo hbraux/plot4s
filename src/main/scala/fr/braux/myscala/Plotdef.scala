@@ -1,15 +1,15 @@
 package fr.braux.myscala
 
+import fr.braux.myscala.PlotValueType.{NoValue, PlotValueType}
+
 
 /**
- * Plotlib provides all definitions and constants
- * It shall be be imported with ._
+ * Plotdef provides all definitions and constants
  */
 object Plotlib  {
 
   /**
-   * A Point is a set of 3D coordinates
-   * Using Floats to avoid convertions for OpenGL
+   * A Point is a set of 3D coordinates (floats avoid conversions for OpenGL)
    */
   case class Point(x: Float, y: Float, z: Float = 0f)
 
@@ -30,6 +30,15 @@ object Plotlib  {
    */
   trait PointProvider {
     def getPoints(display: Display) : Seq[Point]
+    def zoom(factor: Float): Boolean
+  }
+
+  /**
+   * A Plot Handler
+   */
+  trait PlotHandler {
+    def plot: () => Unit
+    def callback: PlotEvent => Boolean
   }
 
   /**
@@ -41,6 +50,18 @@ object Plotlib  {
   val Green: Color = Color(green = 1)
   val Blue: Color = Color(blue = 1)
   val White: Color = Color(red = 1, green = 1, blue = 1)
+
+  /**
+   * Events
+   */
+  sealed class PlotEvent
+  case object PlotEventNone extends PlotEvent
+  case object PlotEventEscape extends PlotEvent
+  case object PlotEventSpace extends PlotEvent
+  case object PlotEventLeft extends PlotEvent
+  case object PlotEventRight extends PlotEvent
+  case object PlotEventUp extends PlotEvent
+  case object PlotEventDown extends PlotEvent
 
   /**
    *  Constants, which their associated value types when
@@ -57,12 +78,8 @@ object Plotlib  {
   case object PlotWindowHeight extends PlotConst(IntValue)
   case object PlotWindowWidth extends PlotConst(IntValue)
   case object PlotWindowColor extends PlotConst(ColorValue)
-  case object PlotLineColor extends PlotConst(ColorValue)
+  case object PlotColor extends PlotConst(ColorValue)
   case object PlotLineWidth extends PlotConst(FloatValue)
-
-  // Keys
-  case object PlotKeyEscape extends PlotConst(NoValue)
-  case object PlotKeySpace extends PlotConst(NoValue)
 
   /**
    * A Parameter is a tuple Constant / Value; the value will be matched against the expected value type
@@ -76,24 +93,27 @@ object Plotlib  {
         case _ => orElse
       }
     }
+    def eval[A](c: PlotConst, f: A => Unit): Unit = settings.get(c) match {
+      case Some(v: A) => f(v)
+      case _ =>
+    }
   }
 
   object PlotSettings {
-    def apply(params: Seq[PlotParam] = Seq.empty): PlotSettings = {
-      params.forall { p =>
-        (p._1.valueType, p._2) match {
-          case (StringValue, x: String) => true
-          case (IntValue, x: Int) => true
-          case (FloatValue, x: Float) => true
-          case (ColorValue, x: Color) => true
-          case (BoolValue, x: Boolean) => true
-          case (ConstValue, x: PlotConst) => true
-          case (_, NoValue) => throw new IllegalArgumentException(s"${p._1} is not a parameter")
-          case _ => throw new IllegalArgumentException(s"Expecting a type ${p._2} for ${p._1}")
+    def apply(params: Seq[PlotParam] = Seq.empty): PlotSettings = PlotSettings(
+      params.map { param =>
+        (param._1.valueType, param._2) match {
+          case (StringValue, v: String) => param
+          case (IntValue, v: Int) => param
+          case (FloatValue, v: Float) => param
+          case (FloatValue, v: Double) => (param._1, v.toFloat)
+          case (ColorValue, v: Color) => param
+          case (BoolValue, v: Boolean) => param
+          case (ConstValue, v: PlotConst) => param
+          case (_, NoValue) => throw new IllegalArgumentException(s"${param._1} is not a parameter")
+          case _ => throw new IllegalArgumentException(s"Expecting a type ${param._1.valueType.toString.replace("Value","")} for ${param._1}")
         }
-      }
-      PlotSettings(params.toMap)
-    }
+      }.toMap)
   }
 }
 

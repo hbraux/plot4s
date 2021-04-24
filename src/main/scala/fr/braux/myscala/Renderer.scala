@@ -9,7 +9,7 @@ trait Renderer {
 
   // actions
   def refresh(): Unit
-  def nextKeyEvent(): Option[PlotConst]
+  def nextEvent(): PlotEvent
   def close(): Unit
 
   // draw
@@ -19,12 +19,15 @@ trait Renderer {
   def quad(a: Point, b: Point, c: Point, d: Point): Unit
   def lines(points: Iterable[Point]): Unit
 
+  // shape
   def color(c: Color): Unit
+  def lineWidth(w: Float): Unit
 
+  // texture handling
   def load(filePath: String): Texture
   def use(t: Texture)
 }
 
 trait RendererFactory {
-  def instance: Renderer
+  def get: Renderer
 }
