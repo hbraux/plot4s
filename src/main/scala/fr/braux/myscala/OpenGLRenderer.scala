@@ -1,7 +1,7 @@
 package fr.braux.myscala
 
 
-import fr.braux.myscala.Plotlib._
+import fr.braux.myscala.Plotdef._
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -83,9 +83,9 @@ class OpenGLRenderer private (val display: Display, window: Long) extends Render
     glEnd()
   }
 
-  override def load(filePath: String): GlTexture = ???
+  override def load(filePath: String): GlTexture = new GlTexture()
 
-  override def use(t: GlTexture): Unit = ???
+  override def use(t: GlTexture): Unit = {}
 
 }
 
@@ -98,7 +98,9 @@ object OpenGLRenderer  {
     GLFW_KEY_LEFT -> PlotEventSpace,
     GLFW_KEY_RIGHT -> PlotEventRight,
     GLFW_KEY_UP -> PlotEventUp,
-    GLFW_KEY_DOWN -> PlotEventDown)
+    GLFW_KEY_DOWN -> PlotEventDown,
+    GLFW_KEY_PAGE_UP -> PlotEventPageUp,
+    GLFW_KEY_PAGE_DOWN -> PlotEventPageDown)
 
   def apply(settings: PlotSettings): Renderer = {
     if (!glfwInit)
@@ -106,7 +108,7 @@ object OpenGLRenderer  {
     glfwSetErrorCallback(new GLFWErrorCallback() {
       override def invoke(error: Int, description: Long): Unit = logger.error(s"OpenGL error $error/$description")
     })
-    val display = Display(settings.get(PlotWindowWidth,300), settings.get(PlotWindowWidth,300), Point(-1, -1, -1), Point(1, 1, 1))
+    val display = Display(settings.get(PlotWindowWidth,300), settings.get(PlotWindowHeight,300), Point(-1, -1, -1), Point(1, 1, 1))
     val window = Option(glfwCreateWindow(display.width, display.height, settings.get(PlotWindowTitle,"title"), 0, 0)).
       getOrElse(throw new IllegalStateException("Unable to create window"))
     glfwMakeContextCurrent(window)

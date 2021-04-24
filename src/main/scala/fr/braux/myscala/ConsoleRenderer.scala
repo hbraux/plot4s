@@ -1,7 +1,7 @@
 package fr.braux.myscala
 
 
-import fr.braux.myscala.Plotlib._
+import fr.braux.myscala.Plotdef._
 
 class ConsoleRenderer private extends Renderer {
 

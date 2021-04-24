@@ -1,12 +1,13 @@
 package fr.braux.myscala
 
 import fr.braux.myscala.PlotValueType.{NoValue, PlotValueType}
+import fr.braux.myscala.Plotter.FunctionPointProvider
 
 
 /**
  * Plotdef provides all definitions and constants
  */
-object Plotlib  {
+object Plotdef  {
 
   /**
    * A Point is a set of 3D coordinates (floats avoid conversions for OpenGL)
@@ -56,12 +57,15 @@ object Plotlib  {
    */
   sealed class PlotEvent
   case object PlotEventNone extends PlotEvent
+  case object PlotEventTimer extends PlotEvent
   case object PlotEventEscape extends PlotEvent
   case object PlotEventSpace extends PlotEvent
   case object PlotEventLeft extends PlotEvent
   case object PlotEventRight extends PlotEvent
   case object PlotEventUp extends PlotEvent
   case object PlotEventDown extends PlotEvent
+  case object PlotEventPageUp extends PlotEvent
+  case object PlotEventPageDown extends PlotEvent
 
   /**
    *  Constants, which their associated value types when
@@ -78,13 +82,23 @@ object Plotlib  {
   case object PlotWindowHeight extends PlotConst(IntValue)
   case object PlotWindowWidth extends PlotConst(IntValue)
   case object PlotWindowColor extends PlotConst(ColorValue)
+
+  // Shapes
   case object PlotColor extends PlotConst(ColorValue)
   case object PlotLineWidth extends PlotConst(FloatValue)
+
+  // Misc
+  case object PlotTimer extends PlotConst(IntValue) // in milliseconds
+  case object PlotScale extends PlotConst(FloatValue)
 
   /**
    * A Parameter is a tuple Constant / Value; the value will be matched against the expected value type
    */
   type PlotParam = (PlotConst, Any)
+
+  trait Plottable {
+    def plot(params: PlotParam*): Unit
+  }
 
   case class PlotSettings(settings: Map[PlotConst, Any]) {
     def get[A](c: PlotConst, orElse: A): A = {

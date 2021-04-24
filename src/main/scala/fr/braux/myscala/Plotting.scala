@@ -1,7 +1,7 @@
 package fr.braux.myscala
 
 
-import fr.braux.myscala.Plotlib._
+import fr.braux.myscala.Plotdef._
 import fr.braux.myscala.Plotter._
 
 import scala.language.implicitConversions
@@ -19,9 +19,15 @@ trait Plotting  {
     }
   }
 
-  class PlottableFunction(f: Double => Double) {
-    def plot(params: PlotParam*): Unit = plotter.withSettings(params).graph(new FunctionPointProvider(f))
-  }
+  // implicit convertions
 
-  implicit def convertToPlottable(f: Double => Double): PlottableFunction = new PlottableFunction(f)
+  class PlottableFunction(f: Double => Double) extends Plottable {
+    override def plot(params: PlotParam*): Unit = plotter.withSettings(params).graph(new FunctionPointProvider(f))
+  }
+  implicit def functionToPlottable(f: Double => Double): PlottableFunction = new PlottableFunction(f)
+
+  class PlottableArray(a: Array[Array[Int]]) extends Plottable {
+    override def plot(params: PlotParam*): Unit = plotter.withSettings(params).board()
+  }
+  implicit def arrayToPlottable(a: Array[Array[Int]]): PlottableArray = new PlottableArray(a)
 }
