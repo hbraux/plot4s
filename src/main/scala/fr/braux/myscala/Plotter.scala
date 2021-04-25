@@ -10,19 +10,19 @@ abstract class Plotter {
   // the Renderer is instanciated lazily from the factory
   val factory: RendererFactory
   lazy val rdr: Renderer = factory.get
-  private var timer = 1000
 
   def plotTiles(board: PlottableBoard) : Boolean = {
     val w = (rdr.display.dx min rdr.display.dy) / board.size
-    for {i <- 0 until board.size; j <- 0 until board.size; if board.plotValue(i, j) > 0} {
-      rdr.color(Black)
-      val p = Point(rdr.display.xmin + w * i, rdr.display.ymin + j * w)
-      rdr.quad(p, p.copy(x = p.x + w), p.copy(y = p.y + w), p.copy(z = p.z + w))
+    for {i <- 0 until board.size
+         j <- 0 until board.size
+         if board.value(i, j) > 0} {
+      val p = Point(rdr.display.xmin + w * i, rdr.display.ymin + w * j)
+      rdr.quad(p, p.copy(x = p.x + w), p.copy(x = p.x + w, y = p.y + w), p.copy(y = p.y + w))
     }
     true
   }
 
-  def plotGraph(fun: PlottableRealFunction): Boolean = {
+  def plotGraph(fun: PlottableFunction): Boolean = {
     //  generate 1 point per horizontal pixel
     val points = (0 to rdr.display.width).map { i =>
       val x = rdr.display.xmin + rdr.display.dx * i / rdr.display.width
@@ -37,7 +37,7 @@ abstract class Plotter {
     p.render(this)
     rdr.refresh()
     var waiting = true
-    var nextTick = System.currentTimeMillis + timer
+    var nextTick = System.currentTimeMillis + p.timer
     while (waiting) {
       val timeout = System.currentTimeMillis > nextTick
       (if (timeout) PlotEventTimer else rdr.nextEvent()) match {
@@ -48,10 +48,8 @@ abstract class Plotter {
           rdr.refresh()
         }
       }
-      if (timeout) {
-        nextTick = System.currentTimeMillis + timer
-        p.next()
-      }
+      if (timeout)
+        nextTick = System.currentTimeMillis + p.timer
     }
     rdr.close()
   }
@@ -60,7 +58,7 @@ abstract class Plotter {
     val settings = PlotSettings(params)
     settings.eval(PlotColor, (v: Color) => rdr.color(v))
     settings.eval(PlotLineWidth, (v: Float) => rdr.lineWidth(v))
-    settings.eval(PlotTimer, (v: Int) => timer = v)
+    settings.eval(PlotTimer, (v: Int) => Plotter.defaultTimer = v)
     settings.eval(PlotScale, (v: Float) => Plotter.defaultScale = v)
     this
   }
@@ -68,4 +66,5 @@ abstract class Plotter {
 
 object Plotter {
   var defaultScale = 2.0f
+  var defaultTimer = 1000
 }

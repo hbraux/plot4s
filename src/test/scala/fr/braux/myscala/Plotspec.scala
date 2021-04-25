@@ -6,7 +6,7 @@ import fr.braux.myscala.Plotdef._
 
 class Plotspec extends  WordSpec with Matchers with Plotting {
 
-  plotSettings(PlotApiOpenGl -> true, PlotWindowWidth -> 800, PlotWindowHeight -> 400, PlotWindowTitle -> "Plotspec")
+  plotSettings(PlotApiOpenGl -> true, PlotWindowWidth -> 500, PlotWindowHeight -> 500, PlotWindowTitle -> "Plotspec")
 
   "Plot" should {
     "plot a graph from Real function"  in {
@@ -15,8 +15,7 @@ class Plotspec extends  WordSpec with Matchers with Plotting {
     }
 
     "plot Langton's ant" in {
-      new LangtonAnt(30).plot()
-
+      new LangtonAnt(30).plot(PlotColor -> Black, PlotTimer -> 100)
     }
 
   }

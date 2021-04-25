@@ -12,27 +12,36 @@ object Plotdef  {
     def plot(params: PlotParam*)(implicit plotter: Plotter): Unit = plotter.withSettings(params).plot(this)
     def render: Plotter => Boolean
     def handler: PlotEvent => Boolean = _ => false
-    def next(): Boolean = false
+    var timer: Int = Plotter.defaultTimer
   }
 
-  trait Scalable {
+  trait PlotScaler extends Plottable {
     var scale: Float = Plotter.defaultScale
-    protected val scaleHandler: PlotEvent => Boolean = {
-      case PlotEventPageUp =>   scale *= 2f; true
-      case PlotEventPageDown => scale *= 0.5f; true
+    override val handler: PlotEvent => Boolean = {
+      case PlotEventPageUp =>   scale /= 2f; true
+      case PlotEventPageDown => scale *= 2f; true
       case _ => false
     }
   }
 
-  trait PlottableRealFunction extends Plottable with Scalable {
+  trait PlotAnimation extends Plottable {
+    def next(): Boolean
+    override val handler: PlotEvent => Boolean = {
+      case PlotEventTimer => next()
+      case PlotEventPageUp =>   timer /= 2; true
+      case PlotEventPageDown => timer *= 2; true
+      case _ => false
+    }
+  }
+
+  trait PlottableFunction extends Plottable with PlotScaler {
     def fx: Double => Double
     override val render: Plotter => Boolean = _.plotGraph(this)
-    override val handler: PlotEvent => Boolean = scaleHandler
   }
 
   trait PlottableBoard extends Plottable {
     def size: Int
-    def plotValue(col: Int, row: Int): Int
+    def value(col: Int, row: Int): Int
     override val render: Plotter => Boolean = _.plotTiles(this)
   }
 

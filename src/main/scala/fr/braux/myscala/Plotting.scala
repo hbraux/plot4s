@@ -17,7 +17,7 @@ trait Plotting  {
     }
   }
 
-  implicit def functionToPlottable(f: Double => Double): PlottableRealFunction = new PlottableRealFunction() {
+  implicit def functionToPlottable(f: Double => Double): PlottableFunction = new PlottableFunction() {
     override def fx: Double => Double = f
   }
 
