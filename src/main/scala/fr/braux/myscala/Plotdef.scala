@@ -1,13 +1,40 @@
 package fr.braux.myscala
 
-import fr.braux.myscala.PlotValueType.{NoValue, PlotValueType}
-import fr.braux.myscala.Plotter.FunctionPointProvider
+import fr.braux.myscala.Plotdef.{PlotEvent, PlotEventPageDown, PlotEventPageUp}
 
 
 /**
  * Plotdef provides all definitions and constants
  */
 object Plotdef  {
+
+  trait Plottable  {
+    def plot(params: PlotParam*)(implicit plotter: Plotter): Unit = plotter.withSettings(params).plot(this)
+    def render: Plotter => Boolean
+    def handler: PlotEvent => Boolean = _ => false
+    def next(): Boolean = false
+  }
+
+  trait Scalable {
+    var scale: Float = Plotter.defaultScale
+    protected val scaleHandler: PlotEvent => Boolean = {
+      case PlotEventPageUp =>   scale *= 2f; true
+      case PlotEventPageDown => scale *= 0.5f; true
+      case _ => false
+    }
+  }
+
+  trait PlottableRealFunction extends Plottable with Scalable {
+    def fx: Double => Double
+    override val render: Plotter => Boolean = _.plotGraph(this)
+    override val handler: PlotEvent => Boolean = scaleHandler
+  }
+
+  trait PlottableBoard extends Plottable {
+    def size: Int
+    def plotValue(col: Int, row: Int): Int
+    override val render: Plotter => Boolean = _.plotTiles(this)
+  }
 
   /**
    * A Point is a set of 3D coordinates (floats avoid conversions for OpenGL)
@@ -19,27 +46,29 @@ object Plotdef  {
    * is rendered by this window (pmin / pmax are left-bottom-front / top-right-back coordinates)
    */
   case class Display(width: Int, height: Int, pmin: Point, pmax: Point) {
-    def zoom(f: Float): Display = {
-      val (wx, wy, wz) = (pmax.x - pmin.x, pmax.y - pmin.y, pmax.z - pmin.z)
-      val c = Point(pmin.x + wx/2, pmin.y + wy/2, pmin.z + wz/2)
-      Display(width, height, Point(c.x - wx*f, c.y - wy*f, c.z - wz*f), Point(c.x + wx*f, c.y - wy*f, c.z - wz*f))
-    }
+    def xmin: Float = pmin.x
+    def ymin: Float = pmin.y
+    def zmin: Float = pmin.z
+    def dx: Float = pmax.x - pmin.x
+    def dy: Float = pmax.y - pmin.y
+    def dz: Float = pmax.z - pmin.z
   }
 
   /**
-   * A PointProvider is used by Renderer to get new points when zooming or moving the veiwed space
+   * A PointProvider is used by Renderer to get new points when (de)zooming
    */
   trait PointProvider {
-    def getPoints(display: Display) : Seq[Point]
+    def get(display: Display) : Iterable[Point]
     def zoom(factor: Float): Boolean
   }
 
   /**
-   * A Plot Handler
+   * Tile Provider
    */
-  trait PlotHandler {
-    def plot: () => Unit
-    def callback: PlotEvent => Boolean
+  trait TileProvider {
+    def size: Int
+    def apply(i: Int, j: Int): Int
+    def next(): Boolean
   }
 
   /**
@@ -95,10 +124,6 @@ object Plotdef  {
    * A Parameter is a tuple Constant / Value; the value will be matched against the expected value type
    */
   type PlotParam = (PlotConst, Any)
-
-  trait Plottable {
-    def plot(params: PlotParam*): Unit
-  }
 
   case class PlotSettings(settings: Map[PlotConst, Any]) {
     def get[A](c: PlotConst, orElse: A): A = {

@@ -12,20 +12,29 @@ abstract class Plotter {
   lazy val rdr: Renderer = factory.get
   private var timer = 1000
 
-  def graph(provider: PointProvider): Unit = handle(new PlotHandler {
-    override val plot: () => Unit = () => rdr.lines(provider.getPoints(rdr.display))
-    override val callback: PlotEvent => Boolean = {
-      case PlotEventPageUp => provider.zoom(2f)
-      case PlotEventPageDown => provider.zoom(0.5f)
-      case _ => false
-    }})
-
-  def board() : Unit = {
-
+  def plotTiles(board: PlottableBoard) : Boolean = {
+    val w = (rdr.display.dx min rdr.display.dy) / board.size
+    for {i <- 0 until board.size; j <- 0 until board.size; if board.plotValue(i, j) > 0} {
+      rdr.color(Black)
+      val p = Point(rdr.display.xmin + w * i, rdr.display.ymin + j * w)
+      rdr.quad(p, p.copy(x = p.x + w), p.copy(y = p.y + w), p.copy(z = p.z + w))
+    }
+    true
   }
 
-  def handle(handler: PlotHandler): Unit = {
-    handler.plot()
+  def plotGraph(fun: PlottableRealFunction): Boolean = {
+    //  generate 1 point per horizontal pixel
+    val points = (0 to rdr.display.width).map { i =>
+      val x = rdr.display.xmin + rdr.display.dx * i / rdr.display.width
+      val y = fun.fx(x * fun.scale).toFloat / fun.scale
+      Point(x,y) }
+    rdr.lines(points)
+    true
+  }
+
+
+  def plot(p: Plottable): Unit = {
+    p.render(this)
     rdr.refresh()
     var waiting = true
     var nextTick = System.currentTimeMillis + timer
@@ -34,13 +43,15 @@ abstract class Plotter {
       (if (timeout) PlotEventTimer else rdr.nextEvent()) match {
         case PlotEventNone =>
         case PlotEventEscape => waiting = false
-        case e => if (handler.callback(e)) {
-          handler.plot()
+        case e => if (p.handler(e)) {
+          p.render(this)
           rdr.refresh()
         }
       }
-      if (timeout)
+      if (timeout) {
         nextTick = System.currentTimeMillis + timer
+        p.next()
+      }
     }
     rdr.close()
   }
@@ -56,24 +67,5 @@ abstract class Plotter {
 }
 
 object Plotter {
-  private var defaultScale = 1.0f
-
-  class FunctionPointProvider(f: Double => Double) extends PointProvider {
-    private var scale = defaultScale
-
-    override def zoom(factor: Float): Boolean = {
-      scale = scale / factor  // TODO: should be capped
-      true
-    }
-
-    // generate 1 point per horizontal pixel
-    override def getPoints(display: Display): Seq[Point] = {
-      (0 to display.width).map { n =>
-        val x = display.pmin.x + (display.pmax.x - display.pmin.x) * n / display.width
-        val y = f(x * scale).toFloat / scale
-        Point(x,y)
-      }
-    }
-
-  }
+  var defaultScale = 2.0f
 }

@@ -14,10 +14,11 @@ class Plotspec extends  WordSpec with Matchers with Plotting {
       f.plot(PlotColor -> Red, PlotLineWidth -> 2.0, PlotScale -> 4.0f)
     }
 
-    "plot a bord" in {
-      val board: Array[Array[Int]] = Array.fill(8,8)(0)
-      board(4)(4) = 1
-      board.plot()
+    "plot Langton's ant" in {
+      new LangtonAnt(30).plot()
+
     }
+
   }
+
 }

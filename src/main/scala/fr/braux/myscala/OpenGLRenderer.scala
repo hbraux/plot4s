@@ -116,6 +116,7 @@ object OpenGLRenderer  {
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     GL.createCapabilities()
     glfwShowWindow(window)
+    glClearColor(1.0f, 1.0f, 1.0f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     new OpenGLRenderer(display, window)
   }
