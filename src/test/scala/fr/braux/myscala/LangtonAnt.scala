@@ -3,8 +3,8 @@ package fr.braux.myscala
 import fr.braux.myscala.Plotdef.{PlotAnimation, PlottableBoard}
 
 class LangtonAnt(val size: Int) extends PlottableBoard with PlotAnimation {
-  private val white = ' '
-  private val black = 'X'
+  private val white: Byte = 0
+  private val black: Byte = 1
   private val m = Array.fill(size, size)(white)
   private var x = size / 2
   private var y = size / 2
@@ -27,8 +27,6 @@ class LangtonAnt(val size: Int) extends PlottableBoard with PlotAnimation {
     true
   }
 
-  override def value(col: Int, row: Int): Int = if (m(col)(row) == black) 1 else 0
-
-  def print(): Unit = m.foreach(x => println(x.mkString))
+  override def value(col: Int, row: Int): Int = m(col)(row)
 }
 
