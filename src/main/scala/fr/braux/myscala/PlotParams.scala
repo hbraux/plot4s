@@ -3,14 +3,16 @@ package fr.braux.myscala
 import fr.braux.myscala.PlotValueType.{BoolValue, ColorValue, ConstValue, FloatValue, IntValue, NoValue, StringValue}
 import fr.braux.myscala.Plotdef.{Color, PlotConst}
 
+import scala.reflect.ClassTag
+
 case class PlotParams(settings: Map[PlotConst, Any]) {
-  def get[A](c: PlotConst, orElse: A): A = {
+  def get[A](c: PlotConst, orElse: A)(implicit t: ClassTag[A]): A = {
     settings.get(c) match {
       case Some(v: A) => v
       case _ => orElse
     }
   }
-  def eval[A](c: PlotConst, f: A => Unit): Unit = settings.get(c) match {
+  def eval[A](c: PlotConst, f: A => Unit)(implicit t: ClassTag[A]): Unit = settings.get(c) match {
     case Some(v: A) => f(v)
     case _ =>
   }

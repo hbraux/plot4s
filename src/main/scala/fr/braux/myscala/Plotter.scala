@@ -8,22 +8,42 @@ import fr.braux.myscala.Plotdef._
 class Plotter (params: PlotParams) {
   private var scale = 2.0f
   private var timer = 1000
-  private var background: Color = White
+  private var bgColor: Color = White
+  private var fgColor: Color = Black
 
-  lazy val renderer: Renderer = if (params.get(PlotConsole, false)) StringRenderer(params) else OpenGLRenderer(params)
+  // the Renderer is created lazily as parameters must be set before
+  lazy val renderer: Renderer = buildRender()
+
+  private def buildRender(): Renderer = {
+    params.get(PlotRenderer, PlotOpenGLRenderer) match {
+      case PlotStringRenderer => StringRenderer(params.get(PlotSize,20), params.get(PlotSize,20))
+      case PlotOpenGLRenderer => OpenGLRenderer(params.get(PlotWindowWidth,400), params.get(PlotWindowHeight,400),  params.get(PlotWindowTitle,"Plot"), bgColor)
+    }
+  }
+
+  private def withColor(color: Color, block : => Unit): Unit = {
+    if (color != NoColor && color != bgColor) {
+      if (color != fgColor) {
+        renderer.color(color)
+        fgColor = color
+      }
+      block
+    }
+  }
 
   def plotTiles[T](matrix: PlottableMatrix[T]) : Boolean = {
     val wx = renderer.dx / matrix.columns
     val wy = renderer.dy / matrix.rows
-    for {r <- 0 until matrix.rows; c<- 0 until matrix.columns} {
-      matrix(r, c) match {
-        case i: Int if i >= 0 && i < Colors.length && Colors(i) != background => renderer.color(Colors(i))
-        case f: Float if f >=0 && f <= 1 => renderer.color(Color(blue = f))
-        case f: Float if f <0 && f >= -1 => renderer.color(Color(red = -f))
-        case _ =>
-      }
-      val p = Point(renderer.xmin + wx * c, renderer.ymin + wy * r)
-      renderer.quad(p, p.copy(x = p.x + wx), p.copy(x = p.x + wx, y = p.y + wy), p.copy(y = p.y + wy))
+    for {r <- 0 until matrix.rows; c <- 0 until matrix.columns} {
+      withColor(matrix(r, c) match {
+        case i: Int if i >= 0 && i < Colors.length => Colors(i)
+        case f: Float if f >=0 && f <= 1 => Color(blue = f)
+        case f: Float if f < 0 && f >= -1 => Color(red = -f)
+        case _ => NoColor
+      }, {
+        val p = Point(renderer.xmin + wx * c, renderer.ymin + wy * r)
+        renderer.quad(p, p.copy(x = p.x + wx), p.copy(x = p.x + wx, y = p.y + wy), p.copy(y = p.y + wy))
+      })
     }
     true
   }
@@ -40,13 +60,12 @@ class Plotter (params: PlotParams) {
 
 
   def plot(p: Plottable): Unit = {
-
-    params.eval(PlotBackground, (v: Color) => background = v)
-    params.eval(PlotColor, (v: Color) => renderer.color(v))
+    params.eval(PlotBackground, (v: Color) => bgColor = v)
+    params.eval(PlotColor, (v: Color) => fgColor = v)
     params.eval(PlotLineWidth, (v: Float) => renderer.lineWidth(v))
     params.eval(PlotTimer, (v: Int) => timer = v)
     params.eval(PlotScale, (v: Float) => scale = v)
-
+    renderer.color(fgColor)
     p.render(this)
     renderer.refresh()
     var waiting = renderer.supportEvents
@@ -61,7 +80,7 @@ class Plotter (params: PlotParams) {
         case PlotEventPageDown => timer /= 2
         case PlotEventSpace    => timer = timer ^ 0 // pause (high timer value)
         case PlotEventUp => scale /= 2; renderer.refresh()
-        case PlotEventUp => scale *= 2; renderer.refresh()
+        case PlotEventDown => scale *= 2; renderer.refresh()
         case PlotEventTimer => p match {
           case x: Playable if x.next() => renderer.refresh()
           case _ =>

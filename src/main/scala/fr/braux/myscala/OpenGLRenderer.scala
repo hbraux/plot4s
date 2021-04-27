@@ -45,7 +45,6 @@ class OpenGLRenderer private (val width: Int, val height: Int, window: Long) ext
   }
 
   override def color(c: Color): Unit = {
-    glClear(GL_COLOR_BUFFER_BIT)
     glColor3f(c.red, c.green, c.blue)
   }
 
@@ -106,22 +105,19 @@ object OpenGLRenderer  {
     GLFW_KEY_PAGE_UP -> PlotEventPageUp,
     GLFW_KEY_PAGE_DOWN -> PlotEventPageDown)
 
-  def apply(params: PlotParams): Renderer = {
+  def apply(width: Int, height: Int, title: String, bg: Color): Renderer = {
     if (!glfwInit)
       throw new IllegalStateException("Unable to initialize GLFW")
     glfwSetErrorCallback(new GLFWErrorCallback() {
       override def invoke(error: Int, description: Long): Unit = logger.error(s"OpenGL error $error/$description")
     })
-    val width = params.get(PlotWindowWidth,300)
-    val height = params.get(PlotWindowHeight,300)
-    val window = Option(glfwCreateWindow(width, height, params.get(PlotWindowTitle,"title"), 0, 0)).
+    val window = Option(glfwCreateWindow(width, height, title, 0, 0)).
       getOrElse(throw new IllegalStateException("Unable to create window"))
     glfwMakeContextCurrent(window)
     glfwSwapInterval(1)
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     GL.createCapabilities()
     glfwShowWindow(window)
-    val bg = params.get(PlotBackground, Black)
     glClearColor(bg.red, bg.green, bg.blue, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     new OpenGLRenderer(width, height, window)

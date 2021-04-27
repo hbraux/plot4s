@@ -12,4 +12,9 @@ trait Plotting  {
     override def apply(x: Double): Double = f(x)
   }
 
+  implicit def arrayToPlottable(a: Array[Array[Int]]): PlottableMatrix[Int] = new PlottableMatrix[Int]() {
+    override val rows: Int = a.length
+    override val columns: Int = a(0).length
+    override def apply(r: Int, c: Int): Int = a(r)(c)
+  }
 }

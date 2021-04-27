@@ -14,7 +14,7 @@ object Plotdef  {
   }
 
   trait Playable extends Plottable {
-    def next(): () => Boolean
+    def next(): Boolean
     def play(f: () => Boolean, params: (PlotConst, Any)*): Unit = Plotter(params).plot(this)
   }
 
@@ -40,6 +40,7 @@ object Plotdef  {
    * A Color is defined by its R-G-B values between 0.0 and 1.0
    */
   case class Color(red: Float = 0, green: Float = 0, blue: Float = 0)
+  val NoColor: Color = Color(-1, -1, -1)
   val Black: Color = Color()
   val Red: Color = Color(red = 1)
   val Green: Color = Color(green = 1)
@@ -48,8 +49,8 @@ object Plotdef  {
   val Purple: Color = Color(red = 1, blue = 1)
   val Cyan: Color = Color(green = 1, blue = 1)
   val White: Color = Color(red = 1, green = 1, blue = 1)
-  // orders by RGB bits
-  val Colors: Array[Color] = Array(Black, Red, Green, Yellow, Blue, Purple, Cyan, White)
+
+  val Colors: Array[Color] = Array(White, Black, Red, Green, Blue, Yellow, Purple, Cyan)
 
   /**
    * Events
@@ -78,6 +79,7 @@ object Plotdef  {
   case object PlotWindowHeight extends PlotConst(IntValue)
   case object PlotWindowWidth extends PlotConst(IntValue)
   case object PlotWindowColor extends PlotConst(ColorValue)
+  case object PlotSize extends PlotConst(IntValue)
 
   // Shapes
   case object PlotColor extends PlotConst(ColorValue)
@@ -88,6 +90,10 @@ object Plotdef  {
   case object PlotTimer extends PlotConst(IntValue) // in milliseconds
   case object PlotScale extends PlotConst(FloatValue)
   case object PlotConsole extends PlotConst(BoolValue)
+  case object PlotRenderer extends PlotConst(StringValue)
+  val PlotOpenGLRenderer = "PlotOpenGLRenderer"
+  val PlotStringRenderer = "StringRenderer"
+  val PlotConsoleRenderer = "ConsoleRenderer"
 
 }
 
