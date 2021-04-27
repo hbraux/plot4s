@@ -1,7 +1,5 @@
 package fr.braux.myscala
 
-import fr.braux.myscala.Plotdef.{PlotEvent, PlotEventPageDown, PlotEventPageUp}
-
 
 /**
  * Plotdef provides all definitions and constants
@@ -9,40 +7,27 @@ import fr.braux.myscala.Plotdef.{PlotEvent, PlotEventPageDown, PlotEventPageUp}
 object Plotdef  {
 
   trait Plottable  {
-    def plot(params: PlotParam*)(implicit plotter: Plotter): Unit = plotter.withSettings(params).plot(this)
+    def plot(params: (PlotConst, Any)*): Unit = Plotter(params).plot(this)
     def render: Plotter => Boolean
-    def handler: PlotEvent => Boolean = _ => false
-    var timer: Int = Plotter.defaultTimer
+    def handlers: Map[PlotEvent, () => Boolean] = Map.empty
+    def isScalable: Boolean
   }
 
-  trait PlotScaler extends Plottable {
-    var scale: Float = Plotter.defaultScale
-    override val handler: PlotEvent => Boolean = {
-      case PlotEventPageUp =>   scale /= 2f; true
-      case PlotEventPageDown => scale *= 2f; true
-      case _ => false
-    }
+  trait Playable extends Plottable {
+    def next(): () => Boolean
+    def play(f: () => Boolean, params: (PlotConst, Any)*): Unit = Plotter(params).plot(this)
   }
 
-  trait PlotAnimation extends Plottable {
-    def next(): Boolean
-    override val handler: PlotEvent => Boolean = {
-      case PlotEventTimer => next()
-      case PlotEventPageUp =>   timer /= 2; true
-      case PlotEventPageDown => timer *= 2; true
-      case _ => false
-    }
-  }
-
-  trait PlottableFunction extends Plottable with PlotScaler {
-    def fx: Double => Double
+  trait PlottableRealFunction extends Function1[Double,Double] with Plottable  {
     override val render: Plotter => Boolean = _.plotGraph(this)
+    override val isScalable = true
   }
 
-  trait PlottableBoard extends Plottable {
-    def size: Int
-    def value(col: Int, row: Int): Int
-    override val render: Plotter => Boolean = _.plotTiles(this)
+  trait PlottableMatrix[T] extends Function2[Int,Int,T] with Plottable {
+    def rows: Int
+    def columns: Int
+    override val render: Plotter => Boolean = _.plotTiles[T](this)
+    override val isScalable = false
   }
 
   /**
@@ -50,35 +35,6 @@ object Plotdef  {
    */
   case class Point(x: Float, y: Float, z: Float = 0f)
 
-  /**
-   * Display provides both information about the Window being displayed and the 2D or 3D space that
-   * is rendered by this window (pmin / pmax are left-bottom-front / top-right-back coordinates)
-   */
-  case class Display(width: Int, height: Int, pmin: Point, pmax: Point) {
-    def xmin: Float = pmin.x
-    def ymin: Float = pmin.y
-    def zmin: Float = pmin.z
-    def dx: Float = pmax.x - pmin.x
-    def dy: Float = pmax.y - pmin.y
-    def dz: Float = pmax.z - pmin.z
-  }
-
-  /**
-   * A PointProvider is used by Renderer to get new points when (de)zooming
-   */
-  trait PointProvider {
-    def get(display: Display) : Iterable[Point]
-    def zoom(factor: Float): Boolean
-  }
-
-  /**
-   * Tile Provider
-   */
-  trait TileProvider {
-    def size: Int
-    def apply(i: Int, j: Int): Int
-    def next(): Boolean
-  }
 
   /**
    * A Color is defined by its R-G-B values between 0.0 and 1.0
@@ -88,7 +44,12 @@ object Plotdef  {
   val Red: Color = Color(red = 1)
   val Green: Color = Color(green = 1)
   val Blue: Color = Color(blue = 1)
+  val Yellow: Color = Color(red = 1, green = 1)
+  val Purple: Color = Color(red = 1, blue = 1)
+  val Cyan: Color = Color(green = 1, blue = 1)
   val White: Color = Color(red = 1, green = 1, blue = 1)
+  // orders by RGB bits
+  val Colors: Array[Color] = Array(Black, Red, Green, Yellow, Blue, Purple, Cyan, White)
 
   /**
    * Events
@@ -111,9 +72,6 @@ object Plotdef  {
   import PlotValueType._
   sealed class PlotConst(val valueType: PlotValueType)
 
-  // Supported APIs
-  case object PlotApiOpenGl extends PlotConst(BoolValue)
-  case object PlotApiConsole extends PlotConst(BoolValue)
 
   // Window Parameters
   case object PlotWindowTitle extends PlotConst(StringValue)
@@ -123,46 +81,14 @@ object Plotdef  {
 
   // Shapes
   case object PlotColor extends PlotConst(ColorValue)
+  case object PlotBackground extends PlotConst(ColorValue)
   case object PlotLineWidth extends PlotConst(FloatValue)
 
   // Misc
   case object PlotTimer extends PlotConst(IntValue) // in milliseconds
   case object PlotScale extends PlotConst(FloatValue)
+  case object PlotConsole extends PlotConst(BoolValue)
 
-  /**
-   * A Parameter is a tuple Constant / Value; the value will be matched against the expected value type
-   */
-  type PlotParam = (PlotConst, Any)
-
-  case class PlotSettings(settings: Map[PlotConst, Any]) {
-    def get[A](c: PlotConst, orElse: A): A = {
-      settings.get(c) match {
-        case Some(v: A) => v
-        case _ => orElse
-      }
-    }
-    def eval[A](c: PlotConst, f: A => Unit): Unit = settings.get(c) match {
-      case Some(v: A) => f(v)
-      case _ =>
-    }
-  }
-
-  object PlotSettings {
-    def apply(params: Seq[PlotParam] = Seq.empty): PlotSettings = PlotSettings(
-      params.map { param =>
-        (param._1.valueType, param._2) match {
-          case (StringValue, v: String) => param
-          case (IntValue, v: Int) => param
-          case (FloatValue, v: Float) => param
-          case (FloatValue, v: Double) => (param._1, v.toFloat)
-          case (ColorValue, v: Color) => param
-          case (BoolValue, v: Boolean) => param
-          case (ConstValue, v: PlotConst) => param
-          case (_, NoValue) => throw new IllegalArgumentException(s"${param._1} is not a parameter")
-          case _ => throw new IllegalArgumentException(s"Expecting a type ${param._1.valueType.toString.replace("Value","")} for ${param._1}")
-        }
-      }.toMap)
-  }
 }
 
 object PlotValueType extends Enumeration {

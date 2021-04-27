@@ -11,10 +11,14 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
-class OpenGLRenderer private (val display: Display, window: Long) extends Renderer {
+class OpenGLRenderer private (val width: Int, val height: Int, window: Long) extends Renderer {
   import OpenGLRenderer._
 
   override type Texture = GlTexture
+
+  override val supportEvents: Boolean = true
+  override val minPoint: Point = Point(-1,-1,-1)
+  override val maxPoint: Point = Point(1,1,1)
 
   private val eventsQueue = new mutable.Queue[PlotEvent]()
 
@@ -102,25 +106,26 @@ object OpenGLRenderer  {
     GLFW_KEY_PAGE_UP -> PlotEventPageUp,
     GLFW_KEY_PAGE_DOWN -> PlotEventPageDown)
 
-  def apply(settings: PlotSettings): Renderer = {
+  def apply(params: PlotParams): Renderer = {
     if (!glfwInit)
       throw new IllegalStateException("Unable to initialize GLFW")
     glfwSetErrorCallback(new GLFWErrorCallback() {
       override def invoke(error: Int, description: Long): Unit = logger.error(s"OpenGL error $error/$description")
     })
-    val display = Display(settings.get(PlotWindowWidth,300), settings.get(PlotWindowHeight,300), Point(-1, -1, -1), Point(1, 1, 1))
-    val window = Option(glfwCreateWindow(display.width, display.height, settings.get(PlotWindowTitle,"title"), 0, 0)).
+    val width = params.get(PlotWindowWidth,300)
+    val height = params.get(PlotWindowHeight,300)
+    val window = Option(glfwCreateWindow(width, height, params.get(PlotWindowTitle,"title"), 0, 0)).
       getOrElse(throw new IllegalStateException("Unable to create window"))
     glfwMakeContextCurrent(window)
     glfwSwapInterval(1)
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     GL.createCapabilities()
     glfwShowWindow(window)
-    glClearColor(1.0f, 1.0f, 1.0f, 0.0f)
+    val bg = params.get(PlotBackground, Black)
+    glClearColor(bg.red, bg.green, bg.blue, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    new OpenGLRenderer(display, window)
+    new OpenGLRenderer(width, height, window)
   }
-
 
   class GlTexture()
 }

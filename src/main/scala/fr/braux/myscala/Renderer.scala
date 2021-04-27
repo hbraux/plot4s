@@ -5,7 +5,12 @@ import fr.braux.myscala.Plotdef._
 trait Renderer {
   // properties
   type Texture
-  def display: Display
+
+  def supportEvents: Boolean
+  def width: Int
+  def height: Int
+  def minPoint: Point
+  def maxPoint: Point
 
   // actions
   def refresh(): Unit
@@ -26,8 +31,11 @@ trait Renderer {
   // texture handling
   def load(filePath: String): Texture
   def use(t: Texture)
-}
 
-trait RendererFactory {
-  def get: Renderer
+  def dx: Float = maxPoint.x - minPoint.x
+  def dy: Float = maxPoint.y - minPoint.y
+  def dz: Float = maxPoint.z - minPoint.z
+  def xmin: Float = minPoint.x
+  def ymin: Float = minPoint.y
+  def zmin: Float = minPoint.z
 }

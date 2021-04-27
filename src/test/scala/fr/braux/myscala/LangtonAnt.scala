@@ -1,8 +1,8 @@
 package fr.braux.myscala
 
-import fr.braux.myscala.Plotdef.{PlotAnimation, PlottableBoard}
+import fr.braux.myscala.Plotdef.{Playable, PlottableMatrix}
 
-class LangtonAnt(val size: Int) extends PlottableBoard with PlotAnimation {
+class LangtonAnt(val size: Int) extends PlottableMatrix[Int] with Playable {
   private val white: Byte = 0
   private val black: Byte = 1
   private val m = Array.fill(size, size)(white)
@@ -27,6 +27,8 @@ class LangtonAnt(val size: Int) extends PlottableBoard with PlotAnimation {
     true
   }
 
-  override def value(col: Int, row: Int): Int = m(col)(row)
+  override def apply(col: Int, row: Int): Int = m(col)(row)
+  override def rows: Int = size
+  override def columns: Int = size
 }
 

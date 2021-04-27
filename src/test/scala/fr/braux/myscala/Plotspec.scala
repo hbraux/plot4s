@@ -6,8 +6,6 @@ import fr.braux.myscala.Plotdef._
 
 class Plotspec extends  WordSpec with Matchers with Plotting {
 
-  plotSettings(PlotApiOpenGl -> true, PlotWindowWidth -> 500, PlotWindowHeight -> 500, PlotWindowTitle -> "Plotspec")
-
   "Plot" should {
     "plot a graph from Real function"  in {
       val f = (x: Double) => Math.sin(2*x) + Math.cos(x)

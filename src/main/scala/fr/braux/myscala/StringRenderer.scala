@@ -3,9 +3,13 @@ package fr.braux.myscala
 
 import fr.braux.myscala.Plotdef._
 
-class ConsoleRenderer private extends Renderer {
+class StringRenderer private(val width: Int, val height: Int) extends Renderer {
 
   override type Texture = Char
+
+  override val supportEvents: Boolean = false
+  override val minPoint: Point = Point(0,0)
+  override val maxPoint: Point = Point(width, height)
 
   override def color(c: Color): Unit = ???
 
@@ -23,8 +27,6 @@ class ConsoleRenderer private extends Renderer {
 
   override def use(t: Texture): Unit = ???
 
-  override def display: Display = ???
-
   override def refresh(): Unit = ???
 
   override def lines(points: Iterable[Point]): Unit = ???
@@ -32,9 +34,10 @@ class ConsoleRenderer private extends Renderer {
   override def lineWidth(w: Float): Unit = {} // not supported
 
   override def nextEvent(): PlotEvent = ???
+
 }
 
-object ConsoleRenderer {
+object StringRenderer {
 
-  def apply(settings: PlotSettings): Renderer = new ConsoleRenderer()
+  def apply(params: PlotParams): Renderer = new StringRenderer(80, 25)
 }
