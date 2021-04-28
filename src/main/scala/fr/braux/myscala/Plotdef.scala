@@ -7,7 +7,7 @@ package fr.braux.myscala
 object Plotdef  {
 
   trait Plottable  {
-    def plot(params: (PlotConst, Any)*): Unit = Plotter(params).plot(this)
+    def plot(params: (PlotConst, Any)*): Array[Byte] = Plotter(params).plot(this)
     def render: Plotter => Unit
     def handlers: Map[PlotEvent, () => Boolean] = Map.empty
     def isScalable: Boolean
@@ -88,10 +88,10 @@ object Plotdef  {
   // Misc
   case object PlotTimer extends PlotConst(IntValue) // in milliseconds
   case object PlotScale extends PlotConst(FloatValue)
-  case object PlotConsole extends PlotConst(BoolValue)
+  case object PlotBinary extends PlotConst(BoolValue)
+
   case object PlotRenderer extends PlotConst(StringValue)
   val PlotOpenGLRenderer = "PlotOpenGLRenderer"
-  val PlotStringRenderer = "StringRenderer"
   val PlotConsoleRenderer = "ConsoleRenderer"
 
 }

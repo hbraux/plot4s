@@ -2,27 +2,29 @@ package fr.braux.myscala
 
 import fr.braux.myscala.Plotdef._
 
+
 /**
  * This is the main implementation which is agnostic of Graphic API
  */
 class Plotter (params: PlotParams) {
+  import fr.braux.myscala.Plotter._
+
   private var scale = 2.0f
   private var timer = 1000
-  private var bgColor: Color = White
-  private var fgColor: Color = Black
 
   // the Renderer is created lazily as parameters must be set before
   lazy val renderer: Renderer = buildRender()
 
   private def buildRender(): Renderer = {
     params.get(PlotRenderer, PlotOpenGLRenderer) match {
-      case PlotStringRenderer => StringRenderer(params.get(PlotWindowWidth,20), params.get(PlotWindowHeight,20))
-      case PlotOpenGLRenderer => OpenGLRenderer(params.get(PlotWindowWidth,400), params.get(PlotWindowHeight,400),  params.get(PlotWindowTitle,"Plot"), bgColor)
+      case PlotConsoleRenderer => ConsoleRenderer(params.get(PlotWindowWidth,20), params.get(PlotWindowHeight,20))
+      case PlotOpenGLRenderer => OpenGLRenderer(params.get(PlotWindowWidth,400), params.get(PlotWindowHeight,400),  params.get(PlotWindowTitle,"Plot"),
+        params.get(PlotBackground, White))
     }
   }
 
   def tiles[T](matrix: PlottableMatrix[T]) : Unit = {
-    renderer.setTiles(matrix.rows, matrix.columns)
+    renderer.useTiles(matrix.rows, matrix.columns)
     for {r <- 0 until matrix.rows; c <- 0 until matrix.columns} {
       renderer.tile(r, c, matrix(r, c) match {
         case i: Int if i >= 0 && i < Colors.length => Colors(i)
@@ -38,17 +40,17 @@ class Plotter (params: PlotParams) {
   }
 
 
-  def plot(p: Plottable): Unit = {
-    params.eval(PlotBackground, (v: Color) => bgColor = v)
-    params.eval(PlotColor, (v: Color) => fgColor = v)
-    params.eval(PlotLineWidth, (v: Float) => renderer.lineWidth(v))
+  def plot(p: Plottable): Array[Byte] = {
     params.eval(PlotTimer, (v: Int) => timer = v)
     params.eval(PlotScale, (v: Float) => scale = v)
-    renderer.useColor(fgColor)
+    renderer.useParams(params)
     p.render(this)
+    if (params.get(PlotBinary, false)) {
+      return renderer.asBinary()
+    }
     renderer.refresh()
-    var waiting = renderer.supportEvents
     var nextTick = System.currentTimeMillis + timer
+    var waiting = true
     while (waiting) {
       val timeout = System.currentTimeMillis > nextTick
       (if (timeout) PlotEventTimer else renderer.nextEvent()) match {
@@ -69,11 +71,13 @@ class Plotter (params: PlotParams) {
         nextTick = System.currentTimeMillis + timer
     }
     renderer.close()
+    noBinary
   }
 
 }
 
 object Plotter {
+  private val noBinary = "".getBytes
   def apply(xs: (PlotConst, Any)*): Plotter = Plotter(xs)
   def apply(xs: Iterable[(PlotConst, Any)]): Plotter = new Plotter(PlotParams(xs))
 }

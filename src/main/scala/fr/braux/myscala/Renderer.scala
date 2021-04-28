@@ -8,7 +8,6 @@ trait Renderer {
 
   // properties
   def background: Color
-  def supportEvents: Boolean
   def width: Int
   def height: Int
   def minPoint: Point
@@ -18,25 +17,32 @@ trait Renderer {
   def refresh(): Unit
   def nextEvent(): PlotEvent
   def close(): Unit
+  def asBinary(): Array[Byte]
 
   // low level APIs
   def point(a: Point): Unit
   def line(a: Point, b: Point): Unit
   def triangle(a: Point, b: Point, c: Point): Unit
   def quad(a: Point, b: Point, c: Point, d: Point): Unit
-  def lines(points: Iterable[Point]): Unit
 
+  def lines(points: Iterable[Point]): Unit
   def useColor(c: Color): Unit
-  def lineWidth(w: Float): Unit
+  def useLine(width: Float): Unit
 
   // texture handling
   def load(filePath: String): Texture
-  def use(t: Texture)
+  def useTexture(t: Texture)
+
+  // set parameters
+  def useParams(params: PlotParams): Unit = {
+    params.eval(PlotColor, (v: Color) => useColor(v))
+    params.eval(PlotLineWidth, (v: Float) => useLine(v))
+  }
 
   // 2D high level APis
   private var tileSize = 1f
 
-  def setTiles(rows: Int, columns: Int): Unit = {
+  def useTiles(rows: Int, columns: Int): Unit = {
     tileSize = (maxPoint.x - minPoint.x)/columns min (maxPoint.y - minPoint.y)/rows
   }
 

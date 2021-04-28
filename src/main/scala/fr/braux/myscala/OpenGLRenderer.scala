@@ -16,7 +16,6 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
 
   override type Texture = GlTexture
 
-  override val supportEvents: Boolean = true
   override val minPoint: Point = Point(-1,-1,-1)
   override val maxPoint: Point = Point(1,1,1)
 
@@ -61,7 +60,7 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
     glEnd()
   }
 
-  override def lineWidth(w: Float): Unit =  glLineWidth(w)
+  override def useLine(width: Float): Unit =  glLineWidth(width)
 
   override def triangle(a: Point, b: Point, c: Point): Unit = {
     glBegin(GL_TRIANGLES)
@@ -88,8 +87,9 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
 
   override def load(filePath: String): GlTexture = new GlTexture()
 
-  override def use(t: GlTexture): Unit = {}
+  override def useTexture(t: GlTexture): Unit = {}
 
+  override def asBinary(): Array[Byte] = "".getBytes()
 }
 
 object OpenGLRenderer  {
