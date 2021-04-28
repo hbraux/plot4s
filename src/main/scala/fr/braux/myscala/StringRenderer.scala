@@ -8,12 +8,13 @@ case class StringRenderer private(width: Int, height: Int) extends Renderer {
   override type Texture = Char
   private val noTexture = ' '
   private var texture: Texture = noTexture
+  override val background: Color = Black
 
   override val supportEvents: Boolean = false
   override val minPoint: Point = Point(0,0)
   override val maxPoint: Point = Point(width, height)
 
-  override def color(c: Color): Unit = ???
+  override def useColor(c: Color): Unit = ???
 
   override def point(a: Point): Unit = ???
 

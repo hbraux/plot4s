@@ -16,46 +16,25 @@ class Plotter (params: PlotParams) {
 
   private def buildRender(): Renderer = {
     params.get(PlotRenderer, PlotOpenGLRenderer) match {
-      case PlotStringRenderer => StringRenderer(params.get(PlotSize,20), params.get(PlotSize,20))
+      case PlotStringRenderer => StringRenderer(params.get(PlotWindowWidth,20), params.get(PlotWindowHeight,20))
       case PlotOpenGLRenderer => OpenGLRenderer(params.get(PlotWindowWidth,400), params.get(PlotWindowHeight,400),  params.get(PlotWindowTitle,"Plot"), bgColor)
     }
   }
 
-  private def withColor(color: Color, block : => Unit): Unit = {
-    if (color != NoColor && color != bgColor) {
-      if (color != fgColor) {
-        renderer.color(color)
-        fgColor = color
-      }
-      block
-    }
-  }
-
-  def plotTiles[T](matrix: PlottableMatrix[T]) : Boolean = {
-    val wx = renderer.dx / matrix.columns
-    val wy = renderer.dy / matrix.rows
+  def tiles[T](matrix: PlottableMatrix[T]) : Unit = {
+    renderer.setTiles(matrix.rows, matrix.columns)
     for {r <- 0 until matrix.rows; c <- 0 until matrix.columns} {
-      withColor(matrix(r, c) match {
+      renderer.tile(r, c, matrix(r, c) match {
         case i: Int if i >= 0 && i < Colors.length => Colors(i)
         case f: Float if f >=0 && f <= 1 => Color(blue = f)
         case f: Float if f < 0 && f >= -1 => Color(red = -f)
-        case _ => NoColor
-      }, {
-        val p = Point(renderer.xmin + wx * c, renderer.ymin + wy * r)
-        renderer.quad(p, p.copy(x = p.x + wx), p.copy(x = p.x + wx, y = p.y + wy), p.copy(y = p.y + wy))
+        case _ => Grey
       })
     }
-    true
   }
 
-  def plotGraph(f: PlottableRealFunction): Boolean = {
-    //  generate 1 point per horizontal pixel
-    val points = (0 to renderer.width).map { i =>
-      val x = renderer.xmin + renderer.dx * i / renderer.width
-      val y = f(x * scale).toFloat / scale
-      Point(x,y) }
-    renderer.lines(points)
-    true
+  def graph(f: PlottableRealFunction): Unit = {
+    renderer.lines(renderer.xRange.map(x => Point(x, f(x * scale).toFloat / scale)))
   }
 
 
@@ -65,7 +44,7 @@ class Plotter (params: PlotParams) {
     params.eval(PlotLineWidth, (v: Float) => renderer.lineWidth(v))
     params.eval(PlotTimer, (v: Int) => timer = v)
     params.eval(PlotScale, (v: Float) => scale = v)
-    renderer.color(fgColor)
+    renderer.useColor(fgColor)
     p.render(this)
     renderer.refresh()
     var waiting = renderer.supportEvents

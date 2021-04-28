@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 
-class OpenGLRenderer private (val width: Int, val height: Int, window: Long) extends Renderer {
+class OpenGLRenderer private (val width: Int, val height: Int, val background: Color, window: Long) extends Renderer {
   import OpenGLRenderer._
 
   override type Texture = GlTexture
@@ -44,7 +44,7 @@ class OpenGLRenderer private (val width: Int, val height: Int, window: Long) ext
     if (eventsQueue.isEmpty) PlotEventNone else eventsQueue.dequeue()
   }
 
-  override def color(c: Color): Unit = {
+  override def useColor(c: Color): Unit = {
     glColor3f(c.red, c.green, c.blue)
   }
 
@@ -105,7 +105,7 @@ object OpenGLRenderer  {
     GLFW_KEY_PAGE_UP -> PlotEventPageUp,
     GLFW_KEY_PAGE_DOWN -> PlotEventPageDown)
 
-  def apply(width: Int, height: Int, title: String, bg: Color): Renderer = {
+  def apply(width: Int, height: Int, title: String, background: Color): Renderer = {
     if (!glfwInit)
       throw new IllegalStateException("Unable to initialize GLFW")
     glfwSetErrorCallback(new GLFWErrorCallback() {
@@ -118,9 +118,9 @@ object OpenGLRenderer  {
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     GL.createCapabilities()
     glfwShowWindow(window)
-    glClearColor(bg.red, bg.green, bg.blue, 0.0f)
+    glClearColor(background.red, background.green, background.blue, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    new OpenGLRenderer(width, height, window)
+    new OpenGLRenderer(width, height, background, window)
   }
 
   class GlTexture()

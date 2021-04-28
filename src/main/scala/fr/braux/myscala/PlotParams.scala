@@ -19,16 +19,17 @@ case class PlotParams(settings: Map[PlotConst, Any]) {
 }
 
 object PlotParams {
+  def apply(xs: (PlotConst, Any)*) : PlotParams = PlotParams(xs)
   def apply(xs: Iterable[(PlotConst, Any)] = Seq.empty): PlotParams = PlotParams(
     xs.map { x =>
       (x._1.valueType, x._2) match {
-        case (StringValue, v: String) => x
-        case (IntValue, v: Int) => x
-        case (FloatValue, v: Float) => x
+        case (StringValue, _: String) => x
+        case (IntValue, _: Int) => x
+        case (FloatValue, _: Float) => x
         case (FloatValue, v: Double) => (x._1, v.toFloat)
-        case (ColorValue, v: Color) => x
-        case (BoolValue, v: Boolean) => x
-        case (ConstValue, v: PlotConst) => x
+        case (ColorValue, _: Color) => x
+        case (BoolValue, _: Boolean) => x
+        case (ConstValue, _: PlotConst) => x
         case (_, NoValue) => throw new IllegalArgumentException(s"${x._1} is not a parameter")
         case _ => throw new IllegalArgumentException(s"Expecting a type ${x._1.valueType.toString.replace("Value","")} for ${x._1}")
       }
