@@ -17,7 +17,7 @@ trait Renderer {
   def refresh(): Unit
   def nextEvent(): PlotEvent
   def close(): Unit
-  def asBinary(): Array[Byte]
+  def getRaw: Array[Byte]
 
   // low level APIs
   def point(a: Point): Unit
@@ -50,7 +50,8 @@ trait Renderer {
     if (c != background) {
       useColor(c)
       val p = Point(minPoint.x + column * tileSize, minPoint.y + row * tileSize)
-      quad(p, p.copy(x = p.x + tileSize), p.copy(x = p.x + tileSize, y = p.y + tileSize), p.copy(y = p.y + tileSize))
+      if (tileSize == 1.0) point(p)
+      else quad(p, p.copy(x = p.x + tileSize), p.copy(x = p.x + tileSize, y = p.y + tileSize), p.copy(y = p.y + tileSize))
     }
   }
 

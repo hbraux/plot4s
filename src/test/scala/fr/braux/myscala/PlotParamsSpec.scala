@@ -25,6 +25,16 @@ class PlotParamsSpec extends WordSpec with Matchers with Plotting {
       params.get[PlotConst](TestConstParam, TestStringParam) shouldEqual TestNoValueParam
       params.get(TestColorParam, White) shouldEqual Red
     }
+
+    "eval any expression with a param" in {
+      val params = PlotParams(TestStringParam -> "s", TestIntParam -> 10, TestFloatParam -> 1f, TestBoolParam -> false, TestConstParam -> TestNoValueParam, TestColorParam -> Red)
+      var someString = ""
+      var someInt = 0
+      params.eval(TestStringParam, (s: String) => someString = s)
+      someString shouldEqual "s"
+      params.eval(TestIntParam, (i: Int)  => someInt = i)
+      someInt shouldEqual 10
+    }
   }
 
 }

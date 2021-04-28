@@ -50,6 +50,6 @@ case class ConsoleRenderer private(width: Int, height: Int) extends Renderer {
 
   override def nextEvent(): PlotEvent = PlotEventNone
 
-  override def asBinary(): Array[Byte] = window.map(_.mkString).mkString("\n").getBytes
+  override def getRaw: Array[Byte] = window.map(_.mkString).mkString("\n").getBytes
 }
 

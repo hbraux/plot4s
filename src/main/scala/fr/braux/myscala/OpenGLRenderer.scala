@@ -89,7 +89,7 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
 
   override def useTexture(t: GlTexture): Unit = {}
 
-  override def asBinary(): Array[Byte] = "".getBytes()
+  override def getRaw: Array[Byte] = throw new NotImplementedError("not supported")
 }
 
 object OpenGLRenderer  {

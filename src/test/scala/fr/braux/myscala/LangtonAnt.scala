@@ -10,7 +10,7 @@ class LangtonAnt(val size: Int) extends PlottableMatrix[Int] with Playable {
   private var y = size / 2
   private var d = 0 // 0: North, 1: East, 2: South, 3: West
 
-  override def next(): Boolean = {
+  override def playNext(): Boolean = {
     if (m(x)(y) == black) {
       m(x)(y) = white
       d = Math.floorMod(d + 1, 4)
@@ -27,7 +27,7 @@ class LangtonAnt(val size: Int) extends PlottableMatrix[Int] with Playable {
     true
   }
 
-  override def apply(col: Int, row: Int): Int = m(col)(row)
+  override def apply(row: Int, col: Int): Int = m(row)(col)
   override def rows: Int = size
   override def columns: Int = size
 }

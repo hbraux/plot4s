@@ -17,8 +17,8 @@ class Plotter (params: PlotParams) {
 
   private def buildRender(): Renderer = {
     params.get(PlotRenderer, PlotOpenGLRenderer) match {
-      case PlotConsoleRenderer => ConsoleRenderer(params.get(PlotWindowWidth,20), params.get(PlotWindowHeight,20))
-      case PlotOpenGLRenderer => OpenGLRenderer(params.get(PlotWindowWidth,400), params.get(PlotWindowHeight,400),  params.get(PlotWindowTitle,"Plot"),
+      case PlotConsoleRenderer => ConsoleRenderer(params.get(PlotWidth,30), params.get(PlotHeight,30))
+      case PlotOpenGLRenderer => OpenGLRenderer(params.get(PlotWidth,400), params.get(PlotHeight,400),  params.get(PlotTitle,"Plot"),
         params.get(PlotBackground, White))
     }
   }
@@ -35,20 +35,20 @@ class Plotter (params: PlotParams) {
     }
   }
 
-  def graph(f: PlottableRealFunction): Unit = {
+  def graph(f: PlottableMathFunction): Unit = {
     renderer.lines(renderer.xRange.map(x => Point(x, f(x * scale).toFloat / scale)))
   }
 
 
-  def plot(p: Plottable): Array[Byte] = {
+  def plot(p: Plottable): Renderer = {
     params.eval(PlotTimer, (v: Int) => timer = v)
     params.eval(PlotScale, (v: Float) => scale = v)
     renderer.useParams(params)
     p.render(this)
-    if (params.get(PlotBinary, false)) {
-      return renderer.asBinary()
-    }
+    if (params.get(PlotToRaw, false))
+      return renderer
     renderer.refresh()
+    def replot(): Unit = { p.render(this); renderer.refresh() }
     var nextTick = System.currentTimeMillis + timer
     var waiting = true
     while (waiting) {
@@ -57,13 +57,14 @@ class Plotter (params: PlotParams) {
         case PlotEventNone =>
         case PlotEventEscape => waiting = false
         case e if p.handlers contains e => p.handlers.get(e).foreach(h => if (h.apply()) renderer.refresh())
-        case PlotEventPageUp   => timer *= 2
-        case PlotEventPageDown => timer /= 2
-        case PlotEventSpace    => timer = timer ^ 0 // pause (high timer value)
-        case PlotEventUp => scale /= 2; renderer.refresh()
-        case PlotEventDown => scale *= 2; renderer.refresh()
+        case PlotEventPageUp   => timer /= 2
+        case PlotEventPageDown => timer *= 2
+        case PlotEventSpace    => timer = timer ^ 0xffffff // pause (high timer value)
+        case PlotEventUp       => scale /= 2; replot()
+        case PlotEventDown      => scale *= 2; replot()
         case PlotEventTimer => p match {
-          case x: Playable if x.next() => renderer.refresh()
+          case x: Playable if x.playNext() => replot()
+          case x: Playable => waiting = false
           case _ =>
         }
       }
@@ -71,8 +72,9 @@ class Plotter (params: PlotParams) {
         nextTick = System.currentTimeMillis + timer
     }
     renderer.close()
-    noBinary
+    renderer
   }
+
 
 }
 

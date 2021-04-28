@@ -7,18 +7,18 @@ package fr.braux.myscala
 object Plotdef  {
 
   trait Plottable  {
-    def plot(params: (PlotConst, Any)*): Array[Byte] = Plotter(params).plot(this)
+    def plot(params: (PlotConst, Any)*): Renderer = Plotter(params).plot(this)
     def render: Plotter => Unit
     def handlers: Map[PlotEvent, () => Boolean] = Map.empty
     def isScalable: Boolean
   }
 
   trait Playable extends Plottable {
-    def next(): Boolean
+    def playNext(): Boolean
     def play(f: () => Boolean, params: (PlotConst, Any)*): Unit = Plotter(params).plot(this)
   }
 
-  trait PlottableRealFunction extends Function1[Double,Double] with Plottable  {
+  trait PlottableMathFunction extends Function1[Double,Double] with Plottable  {
     override val render: Plotter => Unit = _.graph(this)
     override val isScalable = true
   }
@@ -34,7 +34,6 @@ object Plotdef  {
    * A Point is a set of 3D coordinates (floats avoid conversions for OpenGL)
    */
   case class Point(x: Float, y: Float, z: Float = 0f)
-
 
   /**
    * A Color is defined by its R-G-B values between 0.0 and 1.0
@@ -74,21 +73,20 @@ object Plotdef  {
   abstract class PlotConst(val valueType: PlotValueType)
 
 
-  // Window Parameters
-  case object PlotWindowTitle extends PlotConst(StringValue)
-  case object PlotWindowHeight extends PlotConst(IntValue)
-  case object PlotWindowWidth extends PlotConst(IntValue)
-  case object PlotWindowColor extends PlotConst(ColorValue)
+  // Global Parameters
+  case object PlotTitle extends PlotConst(StringValue)
+  case object PlotHeight extends PlotConst(IntValue)
+  case object PlotWidth extends PlotConst(IntValue)
+  case object PlotBackground extends PlotConst(ColorValue)
 
   // Shapes
   case object PlotColor extends PlotConst(ColorValue)
-  case object PlotBackground extends PlotConst(ColorValue)
   case object PlotLineWidth extends PlotConst(FloatValue)
 
   // Misc
   case object PlotTimer extends PlotConst(IntValue) // in milliseconds
   case object PlotScale extends PlotConst(FloatValue)
-  case object PlotBinary extends PlotConst(BoolValue)
+  case object PlotToRaw extends PlotConst(BoolValue)
 
   case object PlotRenderer extends PlotConst(StringValue)
   val PlotOpenGLRenderer = "PlotOpenGLRenderer"

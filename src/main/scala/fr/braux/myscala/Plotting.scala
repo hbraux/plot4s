@@ -8,7 +8,7 @@ import scala.language.implicitConversions
 trait Plotting  {
 
 
-  implicit def functionToPlottable(f: Double => Double): PlottableRealFunction = new PlottableRealFunction() {
+  implicit def functionToPlottable(f: Double => Double): PlottableMathFunction = new PlottableMathFunction() {
     override def apply(x: Double): Double = f(x)
   }
 
