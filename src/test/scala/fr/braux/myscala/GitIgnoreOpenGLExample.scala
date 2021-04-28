@@ -7,7 +7,7 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11._
 
-object OpenGLExample extends App {
+object GitIgnoreOpenGLExample extends App {
 
   // https://gist.github.com/superblaubeere27/c7a935f672e8567c79dcd7da71f54bd3
   private var sp = 0.0f
