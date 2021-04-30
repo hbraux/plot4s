@@ -9,7 +9,7 @@ import fr.braux.myscala.Plotdef._
 class Plotter (params: PlotParams) {
   import fr.braux.myscala.Plotter._
 
-  private var scale = 2.0f
+  private var scale = 10.0f
   private var timer = 1000
 
   // the Renderer is created lazily as parameters must be set before
@@ -36,7 +36,7 @@ class Plotter (params: PlotParams) {
   }
 
   def graph(f: PlottableMathFunction): Unit = {
-    renderer.lines(renderer.xRange.map(x => Point(x, f(x * scale).toFloat / scale)))
+    renderer.lines((0 until renderer.width).map(x => Point(x, renderer.height/2 + f(x / scale).toFloat * scale)))
   }
 
 

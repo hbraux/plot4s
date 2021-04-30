@@ -14,8 +14,6 @@ case class ConsoleRenderer private(width: Int, height: Int) extends Renderer {
   private var window = Array.fill(height, width)(noTexture)
 
   override val background: Color = White
-  override val minPoint: Point = Point(0,0)
-  override val maxPoint: Point = Point(width, height)
 
   override def useColor(c: Color): Unit = if (c != background) texture = defaultTexture
 

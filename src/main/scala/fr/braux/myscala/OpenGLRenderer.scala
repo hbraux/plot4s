@@ -16,9 +16,6 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
 
   override type Texture = GlTexture
 
-  override val minPoint: Point = Point(-1,-1,-1)
-  override val maxPoint: Point = Point(1,1,1)
-
   private val eventsQueue = new mutable.Queue[PlotEvent]()
 
   glfwSetKeyCallback(window, (w, key, _, action, _) => (action, keysMapping.get(key)) match {
@@ -117,6 +114,11 @@ object OpenGLRenderer  {
     glfwSwapInterval(1)
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     GL.createCapabilities()
+    // 2D projection
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    glOrtho(0, width, height, 0, 1, -1)
+    glMatrixMode(GL_MODELVIEW)
     glfwShowWindow(window)
     glClearColor(background.red, background.green, background.blue, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

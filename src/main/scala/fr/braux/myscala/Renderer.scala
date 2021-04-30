@@ -10,8 +10,6 @@ trait Renderer {
   def background: Color
   def width: Int
   def height: Int
-  def minPoint: Point
-  def maxPoint: Point
 
   // actions
   def refresh(): Unit
@@ -42,20 +40,15 @@ trait Renderer {
   // 2D high level APis
   private var tileSize = 1f
 
-  def useTiles(rows: Int, columns: Int): Unit = {
-    tileSize = (maxPoint.x - minPoint.x)/columns min (maxPoint.y - minPoint.y)/rows
-  }
+  def useTiles(rows: Int, columns: Int): Unit = tileSize = width/columns min height/rows
 
   def tile(row: Int, column: Int, c: Color): Unit = {
     if (c != background) {
       useColor(c)
-      val p = Point(minPoint.x + column * tileSize, minPoint.y + row * tileSize)
+      val p = Point(column * tileSize, row * tileSize)
       if (tileSize == 1.0) point(p)
       else quad(p, p.copy(x = p.x + tileSize), p.copy(x = p.x + tileSize, y = p.y + tileSize), p.copy(y = p.y + tileSize))
     }
   }
-
-  // return the X coordinate of each horizontal pixel
-  def xRange: Seq[Float] = (0 until width).map { i => minPoint.x + (maxPoint.x - minPoint.x) * i / width }
   
 }
