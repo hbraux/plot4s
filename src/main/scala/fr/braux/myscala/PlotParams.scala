@@ -1,8 +1,9 @@
 package fr.braux.myscala
 
 import fr.braux.myscala.PlotValueType.{BoolValue, ColorValue, ConstValue, FloatValue, IntValue, NoValue, StringValue}
-import fr.braux.myscala.Plotdef.{Color, PlotConst}
+import fr.braux.myscala.Plotdef.PlotConst
 
+import java.awt.Color
 import scala.reflect.ClassTag
 
 case class PlotParams(settings: Map[PlotConst, Any]) {

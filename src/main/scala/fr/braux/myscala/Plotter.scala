@@ -2,6 +2,8 @@ package fr.braux.myscala
 
 import fr.braux.myscala.Plotdef._
 
+import java.awt.Color
+
 
 /**
  * This is the main implementation which is agnostic of Graphic API
@@ -22,10 +24,10 @@ class Plotter (params: PlotParams) {
     renderer.useTiles(matrix.rows, matrix.columns)
     for {r <- 0 until matrix.rows; c <- 0 until matrix.columns} {
       renderer.tile(r, c, matrix(r, c) match {
-        case i: Int if i >= 0 && i < Colors.length => Colors(i)
-        case f: Float if f >=0 && f <= 1 => Color(blue = f)
-        case f: Float if f < 0 && f >= -1 => Color(red = -f)
-        case _ => Grey
+        case i: Int if i >= 0 && i < BasicColors.length => BasicColors(i)
+        case f: Float if f >=0 && f <= 1 => new Color(0f, 0f, f)
+        case f: Float if f < 0 && f >= -1 => new Color(-f, 0f, 0f)
+        case _ => Color.lightGray
       })
     }
   }

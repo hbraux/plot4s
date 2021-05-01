@@ -2,6 +2,7 @@ package fr.braux.myscala
 
 import fr.braux.myscala.Plotdef._
 
+import java.awt.Color
 import scala.util.{Failure, Success, Try}
 
 abstract class Renderer {
@@ -59,12 +60,12 @@ abstract class RendererFactory {
   def apply(title: String, width: Int, height: Int, background: Color): Renderer
 }
 
-// The RendererFactory is loaded dynamically to use provided dependencies like lwjgl
-// it is assumed that RendererFactory is implemented as a Scala singleton
+// The RendererFactory is loaded dynamically to avoid compile dependencies like lwjgl
 object RendererFactory {
   def apply(name: String) : RendererFactory = {
+    // RendererFactory shall be a Scala Object name
     val className = if (name contains '.') name else this.getClass.getPackage.getName + "." + name + "Renderer$"
-    require(className endsWith "$", "Not an object: " + name)
+    require(className endsWith "$", s"Not an Object: $name")
     Try(Class.forName(className)) match {
       case Success(cl) => cl.getField("MODULE$").get(cl).asInstanceOf[RendererFactory]
       case Failure(e) => throw new IllegalArgumentException(s"cannot load Class $className", e)

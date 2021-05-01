@@ -1,5 +1,6 @@
 package fr.braux.myscala
 
+import java.awt.Color
 
 /**
  * Plotdef provides all definitions and constants
@@ -37,22 +38,7 @@ object Plotdef  {
   case class Point(x: Int, y: Int)
   case class Vertex(x: Float, y: Float, z: Float = 0f)
 
-  /**
-   * A Color is defined by its R-G-B values between 0.0 and 1.0
-   */
-  case class Color(red: Float = 0, green: Float = 0, blue: Float = 0)
-  val Black: Color = Color()
-  val Red: Color = Color(red = 1)
-  val Green: Color = Color(green = 1)
-  val Blue: Color = Color(blue = 1)
-  val Yellow: Color = Color(red = 1, green = 1)
-  val Purple: Color = Color(red = 1, blue = 1)
-  val Cyan: Color = Color(green = 1, blue = 1)
-  val White: Color = Color(red = 1, green = 1, blue = 1)
-  val Grey: Color = Color(0.5f, 0.5f, 0.5f)
-
-  val Colors: Array[Color] = Array(White, Black, Red, Green, Blue, Yellow, Purple, Cyan)
-
+  val BasicColors: Array[Color] = Array(Color.white, Color.black, Color.red, Color.green, Color.blue, Color.yellow, Color.magenta, Color.cyan)
   /**
    * Events
    */
@@ -86,7 +72,7 @@ object Plotdef  {
   case object PlotLineWidth extends PlotConst(FloatValue)
 
   // Misc
-  case object PlotTimer extends PlotConst(IntValue) // in milliseconds
+  case object PlotTimer extends PlotConst(IntValue) // milliseconds
   case object PlotScale extends PlotConst(FloatValue)
   case object PlotToRaw extends PlotConst(BoolValue)
 

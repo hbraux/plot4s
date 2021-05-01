@@ -4,6 +4,8 @@ import fr.braux.myscala.PlotValueType._
 import fr.braux.myscala.Plotdef._
 import org.scalatest.{Matchers, WordSpec}
 
+import java.awt.Color
+
 class PlotParamsSpec extends WordSpec with Matchers with Plotting {
   private object TestNoValueParam extends PlotConst(NoValue)
   private object TestStringParam extends PlotConst(StringValue)
@@ -15,7 +17,7 @@ class PlotParamsSpec extends WordSpec with Matchers with Plotting {
 
   "PlotParams" should {
     "support any param value type" in {
-      val params = PlotParams(TestStringParam -> "s", TestIntParam -> 10, TestFloatParam -> 1f, TestBoolParam -> false, TestConstParam -> TestNoValueParam, TestColorParam -> Red)
+      val params = PlotParams(TestStringParam -> "s", TestIntParam -> 10, TestFloatParam -> 1f, TestBoolParam -> false, TestConstParam -> TestNoValueParam, TestColorParam -> Color.red)
       params.get(TestStringParam, "S") shouldEqual "s"
       params.get(TestNoValueParam, "S") shouldEqual "S"
       params.get(TestIntParam, 20) shouldEqual 10
@@ -23,11 +25,11 @@ class PlotParamsSpec extends WordSpec with Matchers with Plotting {
       params.get(TestFloatParam, 2f) shouldEqual 1f
       params.get(TestBoolParam, true) shouldEqual false
       params.get[PlotConst](TestConstParam, TestStringParam) shouldEqual TestNoValueParam
-      params.get(TestColorParam, White) shouldEqual Red
+      params.get(TestColorParam, Color.white) shouldEqual Color.red
     }
 
     "eval any expression with a param" in {
-      val params = PlotParams(TestStringParam -> "s", TestIntParam -> 10, TestFloatParam -> 1f, TestBoolParam -> false, TestConstParam -> TestNoValueParam, TestColorParam -> Red)
+      val params = PlotParams(TestStringParam -> "s", TestIntParam -> 10, TestFloatParam -> 1f, TestBoolParam -> false, TestConstParam -> TestNoValueParam, TestColorParam -> Color.red)
       var someString = ""
       var someInt = 0
       params.eval(TestStringParam, (s: String) => someString = s)

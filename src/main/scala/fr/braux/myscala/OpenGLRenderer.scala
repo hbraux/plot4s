@@ -9,6 +9,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11._
 import org.slf4j.LoggerFactory
 
+import java.awt.Color
 import scala.collection.mutable
 
 class OpenGLRenderer private (val width: Int, val height: Int, val background: Color, window: Long) extends Renderer {
@@ -40,9 +41,7 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
     if (eventsQueue.isEmpty) PlotEventNone else eventsQueue.dequeue()
   }
 
-  override def useColor(color: Color): Unit = {
-    glColor3f(color.red, color.green, color.blue)
-  }
+  override def useColor(color: Color): Unit = glColor3f(color.getRed/255f, color.getGreen/255f, color.getBlue/255f)
 
   override def point(p: Point): Unit = {
     glBegin(GL_POINT)
@@ -87,7 +86,7 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
 
 object OpenGLRenderer extends RendererFactory {
   override val defaultSize: Int = 840 // multiple of 2,3,5,7,8
-  override val defaultBackground: Color = White
+  override val defaultBackground: Color = Color.white
 
   private lazy val logger = LoggerFactory.getLogger(getClass)
 
@@ -119,7 +118,7 @@ object OpenGLRenderer extends RendererFactory {
     glOrtho(0, width, height, 0, 1, -1)
     glMatrixMode(GL_MODELVIEW)
     glfwShowWindow(window)
-    glClearColor(background.red, background.green, background.blue, 0.0f)
+    glClearColor(background.getRed/255f, background.getGreen/255f, background.getBlue/255f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     new OpenGLRenderer(width, height, background, window)
   }

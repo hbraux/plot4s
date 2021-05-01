@@ -2,6 +2,8 @@ package fr.braux.myscala
 
 import fr.braux.myscala.Plotdef._
 
+import java.awt.Color
+
 case class ConsoleRenderer private(width: Int, height: Int, background: Color) extends Renderer {
 
   override type Texture = Char
@@ -50,6 +52,6 @@ case class ConsoleRenderer private(width: Int, height: Int, background: Color) e
 
 object ConsoleRenderer extends RendererFactory {
   override val defaultSize: Int = 30 // multiple of 2,3 and 5
-  override val defaultBackground: Color = White
+  override val defaultBackground: Color = Color.white
   override def apply(title: String, width: Int, height: Int, background: Color): Renderer = ConsoleRenderer(width, height, background)
 }
