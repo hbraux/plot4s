@@ -4,7 +4,7 @@ import fr.braux.myscala.{LangtonAnt, Plotting}
 
 object PlotMathFunction extends App with Plotting {
   val f = (x: Double) => Math.sin(2 * x) + Math.cos(x)
-  f.plot(PlotScale -> 20.0f, PlotLineWidth -> 2.0, PlotColor -> Red, PlotTitle -> "Some graph")
+  f.plot(PlotLineWidth -> 2.0, PlotColor -> Red, PlotTitle -> "Some graph")
 }
 
 object PlotEmptyChessBoard extends App with Plotting {

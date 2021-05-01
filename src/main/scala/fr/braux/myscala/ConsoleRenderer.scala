@@ -1,11 +1,8 @@
 package fr.braux.myscala
 
-
 import fr.braux.myscala.Plotdef._
 
-import scala.math.abs
-
-case class ConsoleRenderer private(width: Int, height: Int) extends Renderer {
+case class ConsoleRenderer private(width: Int, height: Int, background: Color) extends Renderer {
 
   override type Texture = Char
   private val noTexture = ' '
@@ -13,26 +10,27 @@ case class ConsoleRenderer private(width: Int, height: Int) extends Renderer {
   private var texture: Texture = noTexture
   private var window = Array.fill(height, width)(noTexture)
 
-  override val background: Color = White
+  override def useColor(color: Color): Unit = if (color != background) texture = defaultTexture
 
-  override def useColor(c: Color): Unit = if (c != background) texture = defaultTexture
+  override def point(p: Point): Unit = if (p.x >= 0 && p.y >= 0 && p.x < width && p.y < height) draw(p.y, p.x)
 
-  override def point(a: Point): Unit = point(a.y.toInt, a.x.toInt)
+  private def draw(row: Int, col: Int): Unit = window(row)(col) = defaultTexture
 
-  private def point(r: Int, c: Int): Unit = window(r)(c) = defaultTexture
-
-  override def line(a: Point, b: Point): Unit = {
-    if (a.x == b.x) vline(a.y.toInt min b.y.toInt, a.x.toInt, abs(a.y.toInt - b.y.toInt))
-    else if (a.y == b.y) hline(a.x.toInt min b.x.toInt, a.y.toInt, abs(a.x.toInt - b.x.toInt))
+  override def line(from: Point, to: Point): Unit = {
+    if (from.x == to.x) vline(from.y min to.y, from.x, Math.abs(from.y - to.y))
+    else if (from.y == to.y) hline(from.x min to.x, from.y, Math.abs(from.x - to.x))
     else throw new NotImplementedError("not supported yet")
   }
+  private def vline(row: Int, col: Int, l: Int): Unit = (0 to l).foreach(i => draw(row + i, col))
+  private def hline(row: Int, col: Int, l: Int): Unit = (0 to l).foreach(i => draw(row, col + i))
 
-  private def vline(r: Int, c: Int, length: Int): Unit = (0 to length).foreach(i => point(r + i, c))
-  private def hline(r: Int, c: Int, length: Int): Unit = (0 to length).foreach(i => point(r, c + i))
+  // joined not yet suppoted
+  override def points(ps: Iterable[Point], joined: Boolean): Unit = ps.foreach(point)
 
-  override def triangle(a: Point, b: Point, c: Point): Unit = throw new NotImplementedError("not supported")
+  override def rect(p: Point, w: Int, h: Int): Unit =
+    for (col <- 0 until h; row <- 0 until w) draw(p.y + col, p.x + row)
 
-  override def quad(a: Point, b: Point, c: Point, d: Point): Unit = throw new NotImplementedError("not supported")
+  override def pixels(ps: Iterable[(Point, Color)]): Unit = ps.foreach(p => point(p._1))
 
   override def close(): Unit = {} // do nothing
 
@@ -42,12 +40,16 @@ case class ConsoleRenderer private(width: Int, height: Int) extends Renderer {
 
   override def refresh(): Unit = window = Array.fill(height, width)(noTexture)
 
-  override def lines(points: Iterable[Point]): Unit = throw new NotImplementedError("not supported yet")
-
   override def useLine(width: Float): Unit = {} // do nothing
 
   override def nextEvent(): PlotEvent = PlotEventNone
 
   override def getRaw: Array[Byte] = window.map(_.mkString).mkString("\n").getBytes
+
 }
 
+object ConsoleRenderer extends RendererFactory {
+  override val defaultSize: Int = 30 // multiple of 2,3 and 5
+  override val defaultBackground: Color = White
+  override def apply(title: String, width: Int, height: Int, background: Color): Renderer = ConsoleRenderer(width, height, background)
+}

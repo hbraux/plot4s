@@ -2,7 +2,9 @@ package fr.braux.myscala
 
 import fr.braux.myscala.Plotdef._
 
-trait Renderer {
+import scala.util.{Failure, Success, Try}
+
+abstract class Renderer {
   // texture type
   type Texture
 
@@ -18,13 +20,13 @@ trait Renderer {
   def getRaw: Array[Byte]
 
   // low level APIs
-  def point(a: Point): Unit
-  def line(a: Point, b: Point): Unit
-  def triangle(a: Point, b: Point, c: Point): Unit
-  def quad(a: Point, b: Point, c: Point, d: Point): Unit
+  def point(p: Point): Unit
+  def points(ps: Iterable[Point], joined: Boolean): Unit
+  def line(from: Point, to: Point): Unit
+  def rect(p: Point, w: Int, h: Int): Unit
+  def pixels(ps: Iterable[(Point, Color)]): Unit
 
-  def lines(points: Iterable[Point]): Unit
-  def useColor(c: Color): Unit
+  def useColor(color: Color): Unit
   def useLine(width: Float): Unit
 
   // texture handling
@@ -38,7 +40,7 @@ trait Renderer {
   }
 
   // 2D high level APis
-  private var tileSize = 1f
+  private var tileSize = 1
 
   def useTiles(rows: Int, columns: Int): Unit = tileSize = width/columns min height/rows
 
@@ -46,9 +48,26 @@ trait Renderer {
     if (c != background) {
       useColor(c)
       val p = Point(column * tileSize, row * tileSize)
-      if (tileSize == 1.0) point(p)
-      else quad(p, p.copy(x = p.x + tileSize), p.copy(x = p.x + tileSize, y = p.y + tileSize), p.copy(y = p.y + tileSize))
+      if (tileSize == 1) point(p) else rect(p, tileSize, tileSize)
     }
   }
-  
+}
+
+abstract class RendererFactory {
+  def defaultSize: Int
+  def defaultBackground: Color
+  def apply(title: String, width: Int, height: Int, background: Color): Renderer
+}
+
+// The RendererFactory is loaded dynamically to use provided dependencies like lwjgl
+// it is assumed that RendererFactory is implemented as a Scala singleton
+object RendererFactory {
+  def apply(name: String) : RendererFactory = {
+    val className = if (name contains '.') name else this.getClass.getPackage.getName + "." + name + "Renderer$"
+    require(className endsWith "$", "Not an object: " + name)
+    Try(Class.forName(className)) match {
+      case Success(cl) => cl.getField("MODULE$").get(cl).asInstanceOf[RendererFactory]
+      case Failure(e) => throw new IllegalArgumentException(s"cannot load Class $className", e)
+    }
+  }
 }

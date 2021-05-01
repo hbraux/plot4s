@@ -7,20 +7,15 @@ import fr.braux.myscala.Plotdef._
  * This is the main implementation which is agnostic of Graphic API
  */
 class Plotter (params: PlotParams) {
-  import fr.braux.myscala.Plotter._
 
-  private var scale = 10.0f
+  private var scale = 1.0f
   private var timer = 1000
 
-  // the Renderer is created lazily as parameters must be set before
-  lazy val renderer: Renderer = buildRender()
-
-  private def buildRender(): Renderer = {
-    params.get(PlotRenderer, PlotOpenGLRenderer) match {
-      case PlotConsoleRenderer => ConsoleRenderer(params.get(PlotWidth,30), params.get(PlotHeight,30))
-      case PlotOpenGLRenderer => OpenGLRenderer(params.get(PlotWidth,400), params.get(PlotHeight,400),  params.get(PlotTitle,"Plot"),
-        params.get(PlotBackground, White))
-    }
+  // the Renderer is created lazily
+  lazy val renderer: Renderer = {
+    val factory = RendererFactory(params.get(PlotRenderer, "OpenGL"))
+    scale *= factory.defaultSize / 10 // adjust the scale to size
+    factory(params.get(PlotTitle,"Plot"), params.get(PlotWidth,factory.defaultSize), params.get(PlotHeight,factory.defaultSize), params.get(PlotBackground,factory.defaultBackground))
   }
 
   def tiles[T](matrix: PlottableMatrix[T]) : Unit = {
@@ -35,9 +30,8 @@ class Plotter (params: PlotParams) {
     }
   }
 
-  def graph(f: PlottableMathFunction): Unit = {
-    renderer.lines((0 until renderer.width).map(x => Point(x, renderer.height/2 + f(x / scale).toFloat * scale)))
-  }
+  def graph(f: PlottableMathFunction): Unit =
+    renderer.points((0 until renderer.width).map(x => Point(x, (renderer.height/2 + f(x / scale).toFloat * scale).toInt)), joined = true)
 
 
   def plot(p: Plottable): Renderer = {
@@ -79,7 +73,6 @@ class Plotter (params: PlotParams) {
 }
 
 object Plotter {
-  private val noBinary = "".getBytes
   def apply(xs: (PlotConst, Any)*): Plotter = Plotter(xs)
   def apply(xs: Iterable[(PlotConst, Any)]): Plotter = new Plotter(PlotParams(xs))
 }

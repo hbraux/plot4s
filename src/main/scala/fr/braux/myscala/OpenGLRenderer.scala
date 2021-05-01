@@ -40,56 +40,55 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
     if (eventsQueue.isEmpty) PlotEventNone else eventsQueue.dequeue()
   }
 
-  override def useColor(c: Color): Unit = {
-    glColor3f(c.red, c.green, c.blue)
+  override def useColor(color: Color): Unit = {
+    glColor3f(color.red, color.green, color.blue)
   }
 
-  override def point(a: Point): Unit = {
+  override def point(p: Point): Unit = {
     glBegin(GL_POINT)
-    glVertex3f(a.x, a.y, a.z)
+    glVertex3f(p.x, height - p.y, 0f)
     glEnd()
   }
 
-  override def line(a: Point, b: Point): Unit =  {
+  override def line(from: Point, to: Point): Unit =  {
     glBegin(GL_LINE)
-    glVertex3f(a.x, a.y, a.z)
-    glVertex3f(b.x, b.y, b.z)
+    glVertex3f(from.x, height - from.y, 0f)
+    glVertex3f(to.x, height - to.y, 0f)
+    glEnd()
+  }
+
+  override def points(ps: Iterable[Point], joined: Boolean): Unit = {
+    if (joined) glBegin(GL_LINE_STRIP) else glBegin(GL_POINT)
+    ps.foreach(p => glVertex3f(p.x, height - p.y, 0f))
     glEnd()
   }
 
   override def useLine(width: Float): Unit =  glLineWidth(width)
 
-  override def triangle(a: Point, b: Point, c: Point): Unit = {
-    glBegin(GL_TRIANGLES)
-    glVertex3f(a.x, a.y, a.z)
-    glVertex3f(b.x, b.y, b.z)
-    glVertex3f(c.x, c.y, c.z)
-    glEnd()
-  }
 
-  override def quad(a: Point, b: Point, c: Point, d: Point): Unit = {
+  override def rect(p: Point, w: Int, h: Int): Unit = {
     glBegin(GL_QUADS)
-    glVertex3f(a.x, a.y, a.z)
-    glVertex3f(b.x, b.y, b.z)
-    glVertex3f(c.x, c.y, c.z)
-    glVertex3f(d.x, d.y, d.z)
+    glVertex3f(p.x, height - p.y, 0f)
+    glVertex3f(p.x + w, height - p.y, 0f)
+    glVertex3f(p.x + w, height - (p.y + h), 0f)
+    glVertex3f(p.x, height - (p.y + h), 0f)
     glEnd()
   }
 
-  override def lines(points: Iterable[Point]): Unit = {
-    glBegin(GL_LINE_STRIP)
-    points.foreach(p => glVertex3f(p.x, p.y, p.z))
-    glEnd()
-  }
+  override def pixels(ps: Iterable[(Point, Color)]): Unit = throw new NotImplementedError("not supported")
 
   override def load(filePath: String): GlTexture = new GlTexture()
 
   override def useTexture(t: GlTexture): Unit = {}
 
   override def getRaw: Array[Byte] = throw new NotImplementedError("not supported")
+
 }
 
-object OpenGLRenderer  {
+object OpenGLRenderer extends RendererFactory {
+  override val defaultSize: Int = 840 // multiple of 2,3,5,7,8
+  override val defaultBackground: Color = White
+
   private lazy val logger = LoggerFactory.getLogger(getClass)
 
   private val keysMapping = Map(
@@ -102,7 +101,7 @@ object OpenGLRenderer  {
     GLFW_KEY_PAGE_UP -> PlotEventPageUp,
     GLFW_KEY_PAGE_DOWN -> PlotEventPageDown)
 
-  def apply(width: Int, height: Int, title: String, background: Color): Renderer = {
+  override def apply(title: String, width: Int, height: Int,  background: Color): Renderer = {
     if (!glfwInit)
       throw new IllegalStateException("Unable to initialize GLFW")
     glfwSetErrorCallback(new GLFWErrorCallback() {
@@ -127,3 +126,5 @@ object OpenGLRenderer  {
 
   class GlTexture()
 }
+
+

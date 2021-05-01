@@ -31,9 +31,11 @@ object Plotdef  {
   }
 
   /**
-   * A Point is a set of 3D coordinates (floats avoid conversions for OpenGL)
+   * Point: 2D with (0,0) at top left corner
+   * Vertex: 3D with default ranges from -1.0 to 1.0 (OpenGL)
    */
-  case class Point(x: Float, y: Float, z: Float = 0f)
+  case class Point(x: Int, y: Int)
+  case class Vertex(x: Float, y: Float, z: Float = 0f)
 
   /**
    * A Color is defined by its R-G-B values between 0.0 and 1.0
@@ -89,8 +91,6 @@ object Plotdef  {
   case object PlotToRaw extends PlotConst(BoolValue)
 
   case object PlotRenderer extends PlotConst(StringValue)
-  val PlotOpenGLRenderer = "PlotOpenGLRenderer"
-  val PlotConsoleRenderer = "ConsoleRenderer"
 
 }
 
