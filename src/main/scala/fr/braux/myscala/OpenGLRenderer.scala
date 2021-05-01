@@ -31,10 +31,10 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
       glfwSetErrorCallback(null).free()
     }
 
-  override def refresh(): Unit = {
-    glfwSwapBuffers(window)
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-  }
+
+  override def clear(): Unit = glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+  override def swap(): Unit = glfwSwapBuffers(window)
 
   override def nextEvent(): PlotEvent = {
     glfwPollEvents()

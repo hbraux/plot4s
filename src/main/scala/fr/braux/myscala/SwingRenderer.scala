@@ -10,9 +10,11 @@ class SwingRenderer private (val width: Int, val height: Int, val background: Co
 
   override type Texture = Array[Byte]
 
-  override def refresh(): Unit = {
+  override def swap(): Unit = {}
+
+  override def clear(): Unit = {
+    painter.clear()
     painter.repaint()
-    // painter.clear()
   }
 
   override def nextEvent(): PlotEvent = PlotEventNone
@@ -71,7 +73,8 @@ object SwingRenderer extends RendererFactory {
 
     override def paintComponent(g: Graphics): Unit = {
       super.paintComponent(g)
-      while (drawStack.nonEmpty)  drawStack.dequeue()(g)
+      while (drawStack.nonEmpty)
+        drawStack.dequeue()(g)
     }
   }
 

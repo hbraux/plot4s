@@ -40,7 +40,12 @@ case class ConsoleRenderer private(width: Int, height: Int, background: Color) e
 
   override def useTexture(t: Texture): Unit = texture = t
 
-  override def refresh(): Unit = window = Array.fill(height, width)(noTexture)
+  override def clear(): Unit = window = Array.fill(height, width)(noTexture)
+
+  override def swap(): Unit = {
+    print("\\u001b[H\\u001b[2J")
+    System.out.flush()
+  }
 
   override def useLine(width: Float): Unit = {} // do nothing
 

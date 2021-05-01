@@ -43,8 +43,8 @@ class Plotter (params: PlotParams) {
     p.render(this)
     if (params.get(PlotToRaw, false))
       return renderer
-    renderer.refresh()
-    def replot(): Unit = { p.render(this); renderer.refresh() }
+    renderer.swap()
+    def replot(): Unit = { renderer.clear(); p.render(this); renderer.swap() }
     var nextTick = System.currentTimeMillis + timer
     var waiting = true
     while (waiting) {
@@ -52,7 +52,7 @@ class Plotter (params: PlotParams) {
       (if (timeout) PlotEventTimer else renderer.nextEvent()) match {
         case PlotEventNone =>
         case PlotEventEscape => waiting = false
-        case e if p.handlers contains e => p.handlers.get(e).foreach(h => if (h.apply()) renderer.refresh())
+        case e if p.handlers contains e => p.handlers.get(e).foreach(h => if (h.apply()) renderer.swap())
         case PlotEventPageUp   => timer /= 2
         case PlotEventPageDown => timer *= 2
         case PlotEventSpace    => timer = timer ^ 0xffffff // pause (high timer value)

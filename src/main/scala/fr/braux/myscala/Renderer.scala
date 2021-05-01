@@ -15,7 +15,8 @@ abstract class Renderer {
   def height: Int
 
   // actions
-  def refresh(): Unit
+  def clear(): Unit
+  def swap(): Unit
   def nextEvent(): PlotEvent
   def close(): Unit
   def getRaw: Array[Byte]

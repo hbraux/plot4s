@@ -9,16 +9,25 @@ object PlotMathFunction extends App with Plotting {
   f.plot(PlotLineWidth -> 2.0, PlotColor -> Color.red, PlotTitle -> "Some graph")
 }
 
-object PlotEmptyChessBoard extends App with Plotting {
+object PlotEmptyChessBoardSwing extends App with Plotting {
+  var i = -1
+  val board = Array.fill(8,8){ i += 1; (i/8 + i) %2 }
+  board.plot(PlotRenderer -> "Swing", PlotTitle -> "Chess")
+}
+
+object PlotEmptyChessBoardOpenGL extends App with Plotting {
   var i = -1
   val board = Array.fill(8,8){ i += 1; (i/8 + i) %2 }
   board.plot(PlotRenderer -> "OpenGL", PlotTitle -> "Chess")
 }
 
 
-
-object PlotLangontAnt extends App  {
+object PlotLangontAntSwing extends App  {
   val ant = new LangtonAnt(80)
   ant.plot(PlotRenderer -> "Swing", PlotTimer -> 10, PlotTitle -> "Langton's Ant")
 }
 
+object PlotLangontAntOpenGL extends App  {
+  val ant = new LangtonAnt(80)
+  ant.plot(PlotRenderer -> "OpenGL", PlotTimer -> 10, PlotTitle -> "Langton's Ant")
+}
