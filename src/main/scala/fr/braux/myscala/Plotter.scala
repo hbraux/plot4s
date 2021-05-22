@@ -43,8 +43,8 @@ class Plotter (params: PlotParams) {
     for (i <- 0 until renderer.width; j <- 0 until renderer.height) {
       val x = (i.toFloat/renderer.width - 0.5) * scale
       val y = (j.toFloat/renderer.height - 0.5) * scale
-      val color = (f(x, y) * 255 * 255).toInt
-      image.setRGB(i, j, color)
+      val z = f(x, y).toFloat
+      image.setRGB(i, j, Color.getHSBColor(z * 256, 1f, z).getRGB)
     }
     renderer.image(image)
   }

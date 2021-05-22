@@ -1,7 +1,8 @@
 import fr.braux.myscala.Plotdef.{PlotTitle, _}
-import fr.braux.myscala.{LangtonAnt, Mandelbrot, Plotting}
+import fr.braux.myscala.{LangtonAnt, Plotting}
 
 import java.awt.Color
+import scala.annotation.tailrec
 
 
 object PlotDoubleFunction extends App with Plotting {
@@ -10,7 +11,13 @@ object PlotDoubleFunction extends App with Plotting {
 }
 
 object PlotScalarFunction extends App with Plotting {
-  val f = (x: Double, y: Double) => Mandelbrot(x, y, 200)
+  def mandelbrot(cr: Double, ci: Double, limit: Int = 200): Double = {
+    @tailrec def rec(zr: Double, zi: Double, n: Int): Int = if (n >= limit) n
+      else if (zr * zr + zi * zi > 2.0) n - 1
+      else rec(cr + zr * zr - zi * zi, ci + 2 * zr * zi, n + 1)
+    rec(cr, ci , 1).toDouble / limit  // expecting a value between 0 and 1
+  }
+  val f = (x: Double, y: Double) => mandelbrot(x, y)
   f.plot(PlotRenderer -> "Swing")
 }
 
