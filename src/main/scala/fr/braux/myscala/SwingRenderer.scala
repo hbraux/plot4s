@@ -12,6 +12,7 @@ class SwingRenderer private (val width: Int, val height: Int, val background: Co
   override type Texture = Array[Byte]
 
   override def swap(): Unit = {
+    painter.repaint()
   }
 
   override def clear(): Unit = {
@@ -59,8 +60,8 @@ object SwingRenderer extends RendererFactory {
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.setSize(width, height)
     val painter = new Painter(frame)
-    frame.add(painter, BorderLayout.CENTER)
-    // frame.setResizable(false)
+    frame.add(painter)
+    frame.setResizable(false)
     frame.setVisible(true)
     new SwingRenderer(width, height, background, painter)
   }
@@ -78,6 +79,7 @@ object SwingRenderer extends RendererFactory {
     override def paintComponent(g: Graphics): Unit = {
       super.paintComponent(g)
       drawStack.foreach(_(g))
+      g.dispose()
       }
   }
 
