@@ -3,6 +3,7 @@ package fr.braux.myscala
 import fr.braux.myscala.Plotdef._
 
 import java.awt.Color
+import java.awt.image.BufferedImage
 
 case class ConsoleRenderer private(width: Int, height: Int, background: Color) extends Renderer {
 
@@ -32,8 +33,6 @@ case class ConsoleRenderer private(width: Int, height: Int, background: Color) e
   override def rect(p: Point, w: Int, h: Int): Unit =
     for (col <- 0 until h; row <- 0 until w) draw(p.y + col, p.x + row)
 
-  override def pixels(ps: Iterable[(Point, Color)]): Unit = ps.foreach(p => point(p._1))
-
   override def close(): Unit = {} // do nothing
 
   override def load(filePath: String): Texture = noTexture // do nothing
@@ -53,6 +52,7 @@ case class ConsoleRenderer private(width: Int, height: Int, background: Color) e
 
   override def getRaw: Array[Byte] = window.map(_.mkString).mkString("\n").getBytes
 
+  override def image(img: BufferedImage): Unit = {}
 }
 
 object ConsoleRenderer extends RendererFactory {

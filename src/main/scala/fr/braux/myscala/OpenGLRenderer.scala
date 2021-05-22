@@ -10,6 +10,7 @@ import org.lwjgl.opengl.GL11._
 import org.slf4j.LoggerFactory
 
 import java.awt.Color
+import java.awt.image.BufferedImage
 import scala.collection.mutable
 
 class OpenGLRenderer private (val width: Int, val height: Int, val background: Color, window: Long) extends Renderer {
@@ -74,14 +75,13 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
     glEnd()
   }
 
-  override def pixels(ps: Iterable[(Point, Color)]): Unit = throw new NotImplementedError("not supported")
-
   override def load(filePath: String): GlTexture = new GlTexture()
 
   override def useTexture(t: GlTexture): Unit = {}
 
   override def getRaw: Array[Byte] = throw new NotImplementedError("not supported")
 
+  override def image(img: BufferedImage): Unit =  throw new NotImplementedError("not supported")
 }
 
 object OpenGLRenderer extends RendererFactory {

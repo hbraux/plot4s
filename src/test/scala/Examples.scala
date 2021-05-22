@@ -1,12 +1,17 @@
 import fr.braux.myscala.Plotdef.{PlotTitle, _}
-import fr.braux.myscala.{LangtonAnt, Plotting}
+import fr.braux.myscala.{LangtonAnt, Mandelbrot, Plotting}
 
 import java.awt.Color
 
 
-object PlotMathFunction extends App with Plotting {
-  val f = (x: Double) => Math.sin(2 * x) + Math.cos(x)
-  f.plot(PlotLineWidth -> 2.0, PlotColor -> Color.red, PlotTitle -> "Some graph")
+object PlotDoubleFunction extends App with Plotting {
+  val f = (x: Double) => Math.sin(4 * x)
+  f.plot(PlotRenderer -> "Swing", PlotLineWidth -> 2.0, PlotColor -> Color.red, PlotTitle -> "Some graph")
+}
+
+object PlotScalarFunction extends App with Plotting {
+  val f = (x: Double, y: Double) => Mandelbrot(x, y, 200)
+  f.plot(PlotRenderer -> "Swing")
 }
 
 object PlotEmptyChessBoardSwing extends App with Plotting {

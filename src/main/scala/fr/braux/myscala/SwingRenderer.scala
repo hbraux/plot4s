@@ -2,6 +2,7 @@ package fr.braux.myscala
 import fr.braux.myscala.Plotdef._
 import fr.braux.myscala.SwingRenderer.Painter
 
+import java.awt.image.BufferedImage
 import java.awt.{BorderLayout, Color, Graphics}
 import javax.swing.{JFrame, JPanel}
 import scala.collection.mutable
@@ -10,7 +11,8 @@ class SwingRenderer private (val width: Int, val height: Int, val background: Co
 
   override type Texture = Array[Byte]
 
-  override def swap(): Unit = {}
+  override def swap(): Unit = {
+  }
 
   override def clear(): Unit = {
     painter.clear()
@@ -35,15 +37,15 @@ class SwingRenderer private (val width: Int, val height: Int, val background: Co
 
   override def rect(p: Point, w: Int, h: Int): Unit = painter.add(_.fillRect(p.x, p.y, w, h))
 
-  override def pixels(ps: Iterable[(Point, Color)]): Unit = throw new NotImplementedError("not supported yet")
-
   override def useColor(color: Color): Unit =  painter.add(_.setColor(color))
 
-  override def useLine(width: Float): Unit = throw new NotImplementedError("not supported yet")
+  override def useLine(width: Float): Unit = {} // not supported yet
 
   override def load(filePath: String): Array[Byte] = throw new NotImplementedError("not supported yet")
 
   override def useTexture(t: Array[Byte]): Unit = throw new NotImplementedError("not supported yet")
+
+  override def image(img: BufferedImage): Unit = painter.add(_.drawImage(img, 0, 0, painter))
 }
 
 
@@ -58,24 +60,25 @@ object SwingRenderer extends RendererFactory {
     frame.setSize(width, height)
     val painter = new Painter(frame)
     frame.add(painter, BorderLayout.CENTER)
+    // frame.setResizable(false)
     frame.setVisible(true)
     new SwingRenderer(width, height, background, painter)
   }
 
   class Painter(val frame: JFrame) extends JPanel  {
-    private val drawStack = mutable.Queue[Graphics => Unit]()
+    private val drawStack = mutable.ListBuffer[Graphics => Unit]()
 
     def clear(): Unit = drawStack.clear()
 
     def add(f: Graphics => Unit): Unit = {
-      drawStack.enqueue(f)
+      drawStack.addOne(f)
     }
 
+    // https://stackoverflow.com/questions/14037284/draw-in-an-image-inside-panel/14037856#14037856
     override def paintComponent(g: Graphics): Unit = {
       super.paintComponent(g)
-      while (drawStack.nonEmpty)
-        drawStack.dequeue()(g)
-    }
+      drawStack.foreach(_(g))
+      }
   }
 
 }

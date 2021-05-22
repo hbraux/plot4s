@@ -3,6 +3,7 @@ package fr.braux.myscala
 import fr.braux.myscala.Plotdef._
 
 import java.awt.Color
+import java.awt.image.BufferedImage
 import scala.util.{Failure, Success, Try}
 
 abstract class Renderer {
@@ -26,7 +27,7 @@ abstract class Renderer {
   def points(ps: Iterable[Point], joined: Boolean): Unit
   def line(from: Point, to: Point): Unit
   def rect(p: Point, w: Int, h: Int): Unit
-  def pixels(ps: Iterable[(Point, Color)]): Unit
+  def image(img: BufferedImage): Unit
 
   def useColor(color: Color): Unit
   def useLine(width: Float): Unit

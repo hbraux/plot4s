@@ -3,6 +3,7 @@ package fr.braux.myscala
 import fr.braux.myscala.Plotdef._
 
 import java.awt.Color
+import java.awt.image.BufferedImage
 
 
 /**
@@ -10,13 +11,12 @@ import java.awt.Color
  */
 class Plotter (params: PlotParams) {
 
-  private var scale = 1.0f
+  private var scale = 2.0f // a scale of 2 means that display is [-1,-1] to [1,1]
   private var timer = 1000
 
   // the Renderer is created lazily
   lazy val renderer: Renderer = {
     val factory = RendererFactory(params.get(PlotRenderer, "OpenGL"))
-    scale *= factory.defaultSize / 10 // adjust the scale to size
     factory(params.get(PlotTitle,"Plot"), params.get(PlotWidth,factory.defaultSize), params.get(PlotHeight,factory.defaultSize), params.get(PlotBackground,factory.defaultBackground))
   }
 
@@ -32,19 +32,35 @@ class Plotter (params: PlotParams) {
     }
   }
 
-  def graph(f: PlottableMathFunction): Unit =
-    renderer.points((0 until renderer.width).map(x => Point(x, (renderer.height/2 + f(x / scale).toFloat * scale).toInt)), joined = true)
+  def graph(f: PlottableDoubleFunction): Unit = renderer.points((0 until renderer.width).map { i =>
+      val x = (i.toFloat / renderer.width - 0.5) * scale
+      val y = f(x).toFloat
+      Point(i, ((0.5 - y / scale) * renderer.height).toInt)
+    }, joined = true)
+
+  def image(f: PlottableScalarFunction): Unit = {
+    val image = new BufferedImage(renderer.width, renderer.height, BufferedImage.TYPE_INT_RGB)
+    for (i <- 0 until renderer.width; j <- 0 until renderer.height) {
+      val x = (i.toFloat/renderer.width - 0.5) * scale
+      val y = (j.toFloat/renderer.height - 0.5) * scale
+      val color = (f(x, y) * 255 * 255).toInt
+      image.setRGB(i, j, color)
+    }
+    renderer.image(image)
+  }
 
 
   def plot(p: Plottable): Renderer = {
-    params.eval(PlotTimer, (v: Int) => timer = v)
-    params.eval(PlotScale, (v: Float) => scale = v)
-    renderer.useParams(params)
+    applyParams()
     p.render(this)
     if (params.get(PlotToRaw, false))
       return renderer
     renderer.swap()
-    def replot(): Unit = { renderer.clear(); p.render(this); renderer.swap() }
+    def replot(): Unit = {
+      renderer.clear()
+      p.render(this)
+      renderer.swap()
+    }
     var nextTick = System.currentTimeMillis + timer
     var waiting = true
     while (waiting) {
@@ -69,6 +85,12 @@ class Plotter (params: PlotParams) {
     }
     renderer.close()
     renderer
+  }
+
+  private def applyParams(): Unit = {
+    params.eval(PlotTimer, (v: Int) => timer = v)
+    params.eval(PlotScale, (v: Float) => scale = v)
+    renderer.useParams(params)
   }
 
 

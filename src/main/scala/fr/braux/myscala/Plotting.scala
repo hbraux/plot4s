@@ -7,9 +7,12 @@ import scala.language.implicitConversions
 
 trait Plotting  {
 
-
-  implicit def functionToPlottable(f: Double => Double): PlottableMathFunction = new PlottableMathFunction() {
+  implicit def functionToPlottable(f: Double => Double): PlottableDoubleFunction = new PlottableDoubleFunction() {
     override def apply(x: Double): Double = f(x)
+  }
+
+  implicit def functionToPlottable(f: (Double, Double) => Double): PlottableScalarFunction = new PlottableScalarFunction() {
+    override def apply(x: Double, y: Double): Double = f(x, y)
   }
 
   implicit def arrayToPlottable(a: Array[Array[Int]]): PlottableMatrix[Int] = new PlottableMatrix[Int]() {

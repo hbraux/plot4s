@@ -9,9 +9,9 @@ object Plotdef  {
 
   trait Plottable  {
     def plot(params: (PlotConst, Any)*): Renderer = Plotter(params).plot(this)
-    def render: Plotter => Unit
-    def handlers: Map[PlotEvent, () => Boolean] = Map.empty
-    def isScalable: Boolean
+    val render: Plotter => Unit
+    val handlers: Map[PlotEvent, () => Boolean] = Map.empty
+    val isScalable: Boolean
   }
 
   trait Playable extends Plottable {
@@ -19,10 +19,16 @@ object Plotdef  {
     def play(f: () => Boolean, params: (PlotConst, Any)*): Unit = Plotter(params).plot(this)
   }
 
-  trait PlottableMathFunction extends Function1[Double,Double] with Plottable  {
+  trait PlottableDoubleFunction extends Function1[Double,Double] with Plottable  {
     override val render: Plotter => Unit = _.graph(this)
     override val isScalable = true
   }
+
+  trait PlottableScalarFunction extends Function2[Double, Double, Double] with Plottable  {
+    override val render: Plotter => Unit = _.image(this)
+    override val isScalable = true
+  }
+
 
   trait PlottableMatrix[T] extends Function2[Int,Int,T] with Plottable {
     def rows: Int
