@@ -1,1 +1,1 @@
-# myscala
+# scala-plot
