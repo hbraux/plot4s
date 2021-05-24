@@ -1,7 +1,7 @@
-package fr.braux.myscala
+package fr.braux.splot
 
-import fr.braux.myscala.PlotValueType._
-import fr.braux.myscala.Plotdef._
+import fr.braux.splot.PlotValueType._
+import fr.braux.splot.Plotdef._
 import org.scalatest.{Matchers, WordSpec}
 
 import java.awt.Color

@@ -1,6 +1,6 @@
-package fr.braux.myscala
+package fr.braux.splot
 
-import fr.braux.myscala.Plotdef._
+import fr.braux.splot.Plotdef._
 
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -14,6 +14,7 @@ abstract class Renderer {
   def background: Color
   def width: Int
   def height: Int
+  def title: String
 
   // actions
   def clear(): Unit

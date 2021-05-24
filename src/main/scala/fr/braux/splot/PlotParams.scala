@@ -1,7 +1,7 @@
-package fr.braux.myscala
+package fr.braux.splot
 
-import fr.braux.myscala.PlotValueType.{BoolValue, ColorValue, ConstValue, FloatValue, IntValue, NoValue, StringValue}
-import fr.braux.myscala.Plotdef.PlotConst
+import fr.braux.splot.PlotValueType.{BoolValue, ColorValue, ConstValue, FloatValue, IntValue, NoValue, StringValue}
+import fr.braux.splot.Plotdef.PlotConst
 
 import java.awt.Color
 import scala.reflect.ClassTag

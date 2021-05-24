@@ -1,7 +1,7 @@
-package fr.braux.myscala
+package fr.braux.splot
 
 
-import fr.braux.myscala.Plotdef._
+import fr.braux.splot.Plotdef._
 
 import scala.language.implicitConversions
 

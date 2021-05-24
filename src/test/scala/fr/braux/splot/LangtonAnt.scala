@@ -1,6 +1,6 @@
-package fr.braux.myscala
+package fr.braux.splot
 
-import fr.braux.myscala.Plotdef.{Playable, PlottableMatrix}
+import fr.braux.splot.Plotdef.{Playable, PlottableMatrix}
 
 class LangtonAnt(val size: Int) extends PlottableMatrix[Int] with Playable {
   private val white: Byte = 0
@@ -26,7 +26,6 @@ class LangtonAnt(val size: Int) extends PlottableMatrix[Int] with Playable {
     }
     true
   }
-
   override def apply(row: Int, col: Int): Int = m(row)(col)
   override def rows: Int = size
   override def columns: Int = size

@@ -1,11 +1,11 @@
-package fr.braux.myscala
+package fr.braux.splot
 
-import fr.braux.myscala.Plotdef._
+import fr.braux.splot.Plotdef._
 
 import java.awt.Color
 import java.awt.image.BufferedImage
 
-case class ConsoleRenderer private(width: Int, height: Int, background: Color) extends Renderer {
+case class ConsoleRenderer(title: String, width: Int, height: Int, background: Color) extends Renderer {
 
   override type Texture = Char
   private val noTexture = ' '
@@ -58,5 +58,5 @@ case class ConsoleRenderer private(width: Int, height: Int, background: Color) e
 object ConsoleRenderer extends RendererFactory {
   override val defaultSize: Int = 30 // multiple of 2,3 and 5
   override val defaultBackground: Color = Color.white
-  override def apply(title: String, width: Int, height: Int, background: Color): Renderer = ConsoleRenderer(width, height, background)
+
 }

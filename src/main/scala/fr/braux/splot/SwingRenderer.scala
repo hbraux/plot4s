@@ -1,18 +1,20 @@
-package fr.braux.myscala
-import fr.braux.myscala.Plotdef._
-import fr.braux.myscala.SwingRenderer.Painter
+package fr.braux.splot
+import fr.braux.splot.Plotdef._
+import fr.braux.splot.SwingRenderer.Painter
 
 import java.awt.image.BufferedImage
-import java.awt.{BorderLayout, Color, Graphics}
+import java.awt.{BorderLayout, Color, Graphics, Graphics2D}
+import java.io.{ByteArrayOutputStream, File}
+import javax.imageio.ImageIO
 import javax.swing.{JFrame, JPanel}
 import scala.collection.mutable
 
-class SwingRenderer private (val width: Int, val height: Int, val background: Color, painter: Painter) extends Renderer {
+case class SwingRenderer private (title: String, width: Int, height: Int, background: Color, painter: Painter) extends Renderer {
 
   override type Texture = Array[Byte]
 
   override def swap(): Unit = {
-    painter.repaint()
+    painter.refresh()
   }
 
   override def clear(): Unit = {
@@ -27,7 +29,11 @@ class SwingRenderer private (val width: Int, val height: Int, val background: Co
     painter.frame.dispose()
   }
 
-  override def getRaw: Array[Byte] = throw new NotImplementedError("not supported")
+  override def getRaw: Array[Byte] = {
+    val os = new ByteArrayOutputStream
+    ImageIO.write(painter.image, "PNG", os)
+    os.toByteArray
+  }
 
   override def point(p: Point): Unit = painter.add(_.drawLine(p.x, p.y, p.x, p.y))
 
@@ -51,22 +57,23 @@ class SwingRenderer private (val width: Int, val height: Int, val background: Co
 
 
 object SwingRenderer extends RendererFactory {
-  override val defaultSize: Int = 840
-  override val defaultBackground: Color = Color.white
+  override val defaultSize: Int = 240
+  override val defaultBackground: Color = Color.black
 
 
   override def apply(title: String, width: Int, height: Int, background: Color): Renderer = {
     val frame = new JFrame(title) {}
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.setSize(width, height)
-    val painter = new Painter(frame)
+    val image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
+    val painter = Painter(frame, image, background)
     frame.add(painter)
     frame.setResizable(false)
     frame.setVisible(true)
-    new SwingRenderer(width, height, background, painter)
+    new SwingRenderer(title, width, height, background, painter)
   }
 
-  class Painter(val frame: JFrame) extends JPanel  {
+  case class Painter(frame: JFrame, image: BufferedImage, bg: Color) extends JPanel  {
     private val drawStack = mutable.ListBuffer[Graphics => Unit]()
 
     def clear(): Unit = drawStack.clear()
@@ -75,12 +82,23 @@ object SwingRenderer extends RendererFactory {
       drawStack.addOne(f)
     }
 
-    // https://stackoverflow.com/questions/14037284/draw-in-an-image-inside-panel/14037856#14037856
     override def paintComponent(g: Graphics): Unit = {
       super.paintComponent(g)
-      drawStack.foreach(_(g))
-      g.dispose()
+      g.drawImage(image, 0, 0, null)
+    }
+
+
+    def refresh(): Unit = {
+      val graphics = image.createGraphics
+      graphics.setBackground(bg)
+      if (bg != Color.black) {
+        graphics.clearRect(0, 0, image.getWidth, image.getHeight)
       }
+      drawStack.foreach(_(graphics))
+      graphics.dispose()
+      repaint()
+    }
+
   }
 
 }

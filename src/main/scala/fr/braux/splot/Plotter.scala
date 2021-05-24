@@ -1,6 +1,6 @@
-package fr.braux.myscala
+package fr.braux.splot
 
-import fr.braux.myscala.Plotdef._
+import fr.braux.splot.Plotdef._
 
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -10,14 +10,18 @@ import java.awt.image.BufferedImage
  * This is the main implementation which is agnostic of Graphic API
  */
 class Plotter (params: PlotParams) {
+  import Plotter._
 
   private var scale = 2.0f // a scale of 2 means that display is [-1,-1] to [1,1]
   private var timer = 1000
 
   // the Renderer is created lazily
   lazy val renderer: Renderer = {
-    val factory = RendererFactory(params.get(PlotRenderer, "OpenGL"))
-    factory(params.get(PlotTitle,"Plot"), params.get(PlotWidth,factory.defaultSize), params.get(PlotHeight,factory.defaultSize), params.get(PlotBackground,factory.defaultBackground))
+    val factory = RendererFactory(params.get(PlotRenderer, defaultRenderer))
+    factory(params.get(PlotTitle,defaultTitle),
+      params.get(PlotWidth,factory.defaultSize),
+      params.get(PlotHeight,factory.defaultSize),
+      params.get(PlotBackground,factory.defaultBackground))
   }
 
   def tiles[T](matrix: PlottableMatrix[T]) : Unit = {
@@ -32,11 +36,13 @@ class Plotter (params: PlotParams) {
     }
   }
 
-  def graph(f: PlottableDoubleFunction): Unit = renderer.points((0 until renderer.width).map { i =>
+  def graph(f: PlottableDoubleFunction): Unit = {
+    renderer.points((0 until renderer.width).map { i =>
       val x = (i.toFloat / renderer.width - 0.5) * scale
       val y = f(x).toFloat
       Point(i, ((0.5 - y / scale) * renderer.height).toInt)
     }, joined = true)
+  }
 
   def image(f: PlottableScalarFunction): Unit = {
     val image = new BufferedImage(renderer.width, renderer.height, BufferedImage.TYPE_INT_RGB)
@@ -53,9 +59,9 @@ class Plotter (params: PlotParams) {
   def plot(p: Plottable): Renderer = {
     applyParams()
     p.render(this)
-    if (params.get(PlotToRaw, false))
-      return renderer
     renderer.swap()
+    if (params.get(PlotToRaw, defaultToRaw))
+      return renderer
     def replot(): Unit = {
       renderer.clear()
       p.render(this)
@@ -97,6 +103,10 @@ class Plotter (params: PlotParams) {
 }
 
 object Plotter {
+  var defaultRenderer = "Swing"
+  val defaultTitle = "Scala Plot"
+  var defaultToRaw = false
+
   def apply(xs: (PlotConst, Any)*): Plotter = Plotter(xs)
   def apply(xs: Iterable[(PlotConst, Any)]): Plotter = new Plotter(PlotParams(xs))
 }

@@ -1,7 +1,7 @@
-package fr.braux.myscala
+package fr.braux.splot
 
 
-import fr.braux.myscala.Plotdef._
+import fr.braux.splot.Plotdef._
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -13,7 +13,7 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import scala.collection.mutable
 
-class OpenGLRenderer private (val width: Int, val height: Int, val background: Color, window: Long) extends Renderer {
+case class OpenGLRenderer private (title: String, width: Int, height: Int, background: Color, window: Long) extends Renderer {
   import OpenGLRenderer._
 
   override type Texture = GlTexture
@@ -85,8 +85,8 @@ class OpenGLRenderer private (val width: Int, val height: Int, val background: C
 }
 
 object OpenGLRenderer extends RendererFactory {
-  override val defaultSize: Int = 840 // multiple of 2,3,5,7,8
-  override val defaultBackground: Color = Color.white
+  override val defaultSize: Int = 240
+  override val defaultBackground: Color = Color.black
 
   private lazy val logger = LoggerFactory.getLogger(getClass)
 
@@ -120,7 +120,7 @@ object OpenGLRenderer extends RendererFactory {
     glfwShowWindow(window)
     glClearColor(background.getRed/255f, background.getGreen/255f, background.getBlue/255f, 0.0f)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    new OpenGLRenderer(width, height, background, window)
+    new OpenGLRenderer(title, width, height, background, window)
   }
 
   class GlTexture()

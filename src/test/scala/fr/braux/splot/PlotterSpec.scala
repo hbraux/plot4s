@@ -1,12 +1,12 @@
-package fr.braux.myscala
+package fr.braux.splot
 
 import org.scalatest.{Matchers, WordSpec}
 
-import fr.braux.myscala.Plotdef._
+import fr.braux.splot.Plotdef._
 
 class PlotterSpec extends  WordSpec with Matchers with Plotting {
 
-  "Plot" should {
+  "Plotter" should {
     "plot a graph from Real function"  in {
       val f = (x: Double) => Math.sin(2*x) + Math.cos(x)
       val rdr = f.plot(PlotRenderer -> "Console", PlotToRaw -> true, PlotWidth -> 10, PlotHeight -> 10)

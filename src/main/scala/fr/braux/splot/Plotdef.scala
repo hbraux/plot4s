@@ -1,4 +1,4 @@
-package fr.braux.myscala
+package fr.braux.splot
 
 import java.awt.Color
 
