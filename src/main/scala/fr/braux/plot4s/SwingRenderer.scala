@@ -75,7 +75,7 @@ object SwingRenderer extends RendererFactory {
   private val keysMapping = Map(
     VK_ESCAPE -> PlotEventEscape,
     VK_SPACE -> PlotEventSpace,
-    VK_LEFT -> PlotEventSpace,
+    VK_LEFT -> PlotEventLeft,
     VK_RIGHT -> PlotEventRight,
     VK_UP -> PlotEventUp,
     VK_DOWN -> PlotEventDown,

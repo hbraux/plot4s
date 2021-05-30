@@ -39,8 +39,8 @@ class Plotter (params: PlotParams) {
 
   def graph(f: PlottableDoubleFunction): Unit = {
     renderer.points((0 until renderer.width).map { i =>
-      val x = (i.toFloat / renderer.width - 0.5) * scale
-      val y = f(x).toFloat
+      val x = (i.toFloat / renderer.width - 0.5) * scale + center._1
+      val y = f(x).toFloat  + center._2
       Point(i, ((0.5 - y / scale) * renderer.height).toInt)
     }, joined = true)
   }
@@ -48,8 +48,8 @@ class Plotter (params: PlotParams) {
   def image(f: PlottableScalarFunction): Unit = {
     val image = new BufferedImage(renderer.width, renderer.height, BufferedImage.TYPE_INT_RGB)
     for (i <- 0 until renderer.width; j <- 0 until renderer.height) {
-      val x = (i.toFloat/renderer.width - 0.5) * scale
-      val y = (j.toFloat/renderer.height - 0.5) * scale
+      val x = (i.toFloat/renderer.width - 0.5) * scale  + center._1
+      val y = (j.toFloat/renderer.height - 0.5) * scale  + center._2
       val z = f(x, y).toFloat
       image.setRGB(i, j, Color.getHSBColor(z * 256, 1f, z).getRGB)
     }
@@ -79,8 +79,8 @@ class Plotter (params: PlotParams) {
         case PlotEventPageDown => rescale(p, zoom = 0.5f)
         case PlotEventRight    => rescale(p, dx = 1)
         case PlotEventLeft     => rescale(p, dx = -1)
-        case PlotEventUp       => rescale(p, dy = 1)
-        case PlotEventDown     => rescale(p, dy = -1)
+        case PlotEventUp       => rescale(p, dy = -1)
+        case PlotEventDown     => rescale(p, dy = 1)
 
         case PlotEventTimer => p match {
           case x: Playable if x.playNext() => renderer.clear(); p.render(this); renderer.swap()
@@ -102,7 +102,8 @@ class Plotter (params: PlotParams) {
   }
 
   private def rescale(p: Plottable, zoom: Float = 1.0f, dx: Int = 0, dy: Int = 0): Unit = {
-    scale = scale * zoom
+    scale = scale / zoom
+    center = (center._1 + dx * scale/2, center._2 + dy * scale/2)
     renderer.clear()
     p.render(this)
     renderer.swap()

@@ -95,7 +95,7 @@ object OpenGLRenderer extends RendererFactory {
   private val keysMapping = Map(
     GLFW_KEY_ESCAPE -> PlotEventEscape,
     GLFW_KEY_SPACE -> PlotEventSpace,
-    GLFW_KEY_LEFT -> PlotEventSpace,
+    GLFW_KEY_LEFT -> PlotEventLeft,
     GLFW_KEY_RIGHT -> PlotEventRight,
     GLFW_KEY_UP -> PlotEventUp,
     GLFW_KEY_DOWN -> PlotEventDown,
