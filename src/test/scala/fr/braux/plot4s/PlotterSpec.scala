@@ -1,8 +1,8 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
 import org.scalatest.{Matchers, WordSpec}
 
-import fr.braux.splot.Plotdef._
+import fr.braux.plot4s.Plotdef._
 
 class PlotterSpec extends  WordSpec with Matchers with Plotting {
 

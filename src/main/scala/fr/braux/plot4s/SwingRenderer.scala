@@ -1,15 +1,20 @@
-package fr.braux.splot
-import fr.braux.splot.Plotdef._
-import fr.braux.splot.SwingRenderer.Painter
+package fr.braux.plot4s
+import fr.braux.plot4s.Plotdef._
+import fr.braux.plot4s.SwingRenderer.Painter
 
+import java.awt.event.{KeyEvent, KeyListener}
 import java.awt.image.BufferedImage
 import java.awt.{BorderLayout, Color, Graphics, Graphics2D}
 import java.io.{ByteArrayOutputStream, File}
 import javax.imageio.ImageIO
-import javax.swing.{JFrame, JPanel}
+import javax.swing.{JComponent, JFrame, JPanel}
 import scala.collection.mutable
+import java.awt.event.KeyEvent._
 
-case class SwingRenderer private (title: String, width: Int, height: Int, background: Color, painter: Painter) extends Renderer {
+case class SwingRenderer private (title: String, width: Int, height: Int, background: Color, painter: Painter) extends Renderer with KeyListener {
+
+  import SwingRenderer._
+  private val eventsQueue = new mutable.Queue[PlotEvent]()
 
   override type Texture = Array[Byte]
 
@@ -22,7 +27,7 @@ case class SwingRenderer private (title: String, width: Int, height: Int, backgr
     painter.repaint()
   }
 
-  override def nextEvent(): PlotEvent = PlotEventNone
+  override def nextEvent(): PlotEvent = if (eventsQueue.isEmpty) PlotEventNone else eventsQueue.dequeue()
 
   override def close(): Unit = {
     painter.frame.setVisible(false)
@@ -53,12 +58,29 @@ case class SwingRenderer private (title: String, width: Int, height: Int, backgr
   override def useTexture(t: Array[Byte]): Unit = throw new NotImplementedError("not supported yet")
 
   override def image(img: BufferedImage): Unit = painter.add(_.drawImage(img, 0, 0, painter))
+
+  override def setTitle(title: String): Unit = painter.frame.setTitle(title)
+
+  // key listener
+  override def keyTyped(e: KeyEvent): Unit = {}
+  override def keyPressed(e: KeyEvent): Unit = {}
+  override def keyReleased(e: KeyEvent): Unit = keysMapping.get(e.getKeyCode).foreach(eventsQueue.enqueue(_))
 }
 
 
 object SwingRenderer extends RendererFactory {
-  override val defaultSize: Int = 240
+  override val defaultSize: Int = 480
   override val defaultBackground: Color = Color.black
+
+  private val keysMapping = Map(
+    VK_ESCAPE -> PlotEventEscape,
+    VK_SPACE -> PlotEventSpace,
+    VK_LEFT -> PlotEventSpace,
+    VK_RIGHT -> PlotEventRight,
+    VK_UP -> PlotEventUp,
+    VK_DOWN -> PlotEventDown,
+    VK_PAGE_UP -> PlotEventPageUp,
+    VK_PAGE_DOWN -> PlotEventPageDown)
 
 
   override def apply(title: String, width: Int, height: Int, background: Color): Renderer = {
@@ -70,7 +92,9 @@ object SwingRenderer extends RendererFactory {
     frame.add(painter)
     frame.setResizable(false)
     frame.setVisible(true)
-    new SwingRenderer(title, width, height, background, painter)
+    val renderer = SwingRenderer(title, width, height, background, painter)
+    frame.addKeyListener(renderer)
+    renderer
   }
 
   case class Painter(frame: JFrame, image: BufferedImage, bg: Color) extends JPanel  {

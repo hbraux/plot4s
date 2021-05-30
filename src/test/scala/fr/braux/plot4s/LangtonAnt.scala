@@ -1,6 +1,6 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
-import fr.braux.splot.Plotdef.{Playable, PlottableMatrix}
+import fr.braux.plot4s.Plotdef.{Playable, PlottableMatrix}
 
 class LangtonAnt(val size: Int) extends PlottableMatrix[Int] with Playable {
   private val white: Byte = 0

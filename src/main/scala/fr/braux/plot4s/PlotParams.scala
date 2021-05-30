@@ -1,7 +1,7 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
-import fr.braux.splot.PlotValueType.{BoolValue, ColorValue, ConstValue, FloatValue, IntValue, NoValue, StringValue}
-import fr.braux.splot.Plotdef.PlotConst
+import fr.braux.plot4s.PlotValueType.{BoolValue, ColorValue, ConstValue, FloatValue, IntValue, NoValue, StringValue}
+import fr.braux.plot4s.Plotdef.PlotConst
 
 import java.awt.Color
 import scala.reflect.ClassTag

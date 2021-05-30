@@ -1,6 +1,6 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
-import fr.braux.splot.Plotdef._
+import fr.braux.plot4s.Plotdef._
 
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -53,6 +53,8 @@ case class ConsoleRenderer(title: String, width: Int, height: Int, background: C
   override def getRaw: Array[Byte] = window.map(_.mkString).mkString("\n").getBytes
 
   override def image(img: BufferedImage): Unit = {}
+
+  override def setTitle(title: String): Unit = {}
 }
 
 object ConsoleRenderer extends RendererFactory {

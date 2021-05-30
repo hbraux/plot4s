@@ -1,12 +1,13 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
-import fr.braux.splot.Plotdef._
+import fr.braux.plot4s.Plotdef._
 
 import java.awt.Color
 import java.awt.image.BufferedImage
 import scala.util.{Failure, Success, Try}
 
 abstract class Renderer {
+
   // texture type
   type Texture
 
@@ -22,6 +23,7 @@ abstract class Renderer {
   def nextEvent(): PlotEvent
   def close(): Unit
   def getRaw: Array[Byte]
+  def setTitle(title: String)
 
   // low level APIs
   def point(p: Point): Unit

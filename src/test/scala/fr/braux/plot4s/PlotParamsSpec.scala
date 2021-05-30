@@ -1,7 +1,7 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
-import fr.braux.splot.PlotValueType._
-import fr.braux.splot.Plotdef._
+import fr.braux.plot4s.PlotValueType._
+import fr.braux.plot4s.Plotdef._
 import org.scalatest.{Matchers, WordSpec}
 
 import java.awt.Color

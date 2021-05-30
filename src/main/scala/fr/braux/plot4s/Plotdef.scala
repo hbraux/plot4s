@@ -1,4 +1,4 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
 import java.awt.Color
 
@@ -59,13 +59,14 @@ object Plotdef  {
   case object PlotEventDown extends PlotEvent
   case object PlotEventPageUp extends PlotEvent
   case object PlotEventPageDown extends PlotEvent
+  case object PlotEventBegin extends PlotEvent
+  case object PlotEventEnd extends PlotEvent
 
   /**
    *  Constants, which their associated value types when
    */
   import PlotValueType._
   abstract class PlotConst(val valueType: PlotValueType)
-
 
   // Global Parameters
   case object PlotTitle extends PlotConst(StringValue)

@@ -1,6 +1,6 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
-import fr.braux.splot.Plotdef._
+import fr.braux.plot4s.Plotdef._
 
 import java.awt.Color
 import java.awt.image.BufferedImage
@@ -13,6 +13,7 @@ class Plotter (params: PlotParams) {
   import Plotter._
 
   private var scale = 2.0f // a scale of 2 means that display is [-1,-1] to [1,1]
+  private var center = (0.0f, 0.0f)
   private var timer = 1000
 
   // the Renderer is created lazily
@@ -60,12 +61,8 @@ class Plotter (params: PlotParams) {
     applyParams()
     p.render(this)
     renderer.swap()
-    if (params.get(PlotToRaw, defaultToRaw))
+    if (params.get(PlotToRaw, defaultToRaw)) {
       return renderer
-    def replot(): Unit = {
-      renderer.clear()
-      p.render(this)
-      renderer.swap()
     }
     var nextTick = System.currentTimeMillis + timer
     var waiting = true
@@ -75,14 +72,19 @@ class Plotter (params: PlotParams) {
         case PlotEventNone =>
         case PlotEventEscape => waiting = false
         case e if p.handlers contains e => p.handlers.get(e).foreach(h => if (h.apply()) renderer.swap())
-        case PlotEventPageUp   => timer /= 2
-        case PlotEventPageDown => timer *= 2
+        case PlotEventBegin   => timer /= 2
+        case PlotEventEnd => timer *= 2
         case PlotEventSpace    => timer = timer ^ 0xffffff // pause (high timer value)
-        case PlotEventUp       => scale /= 2; replot()
-        case PlotEventDown      => scale *= 2; replot()
+        case PlotEventPageUp   => rescale(p, zoom = 2)
+        case PlotEventPageDown => rescale(p, zoom = 0.5f)
+        case PlotEventRight    => rescale(p, dx = 1)
+        case PlotEventLeft     => rescale(p, dx = -1)
+        case PlotEventUp       => rescale(p, dy = 1)
+        case PlotEventDown     => rescale(p, dy = -1)
+
         case PlotEventTimer => p match {
-          case x: Playable if x.playNext() => replot()
-          case x: Playable => waiting = false
+          case x: Playable if x.playNext() => renderer.clear(); p.render(this); renderer.swap()
+          case _: Playable => waiting = false
           case _ =>
         }
       }
@@ -99,12 +101,18 @@ class Plotter (params: PlotParams) {
     renderer.useParams(params)
   }
 
+  private def rescale(p: Plottable, zoom: Float = 1.0f, dx: Int = 0, dy: Int = 0): Unit = {
+    scale = scale * zoom
+    renderer.clear()
+    p.render(this)
+    renderer.swap()
+  }
 
 }
 
 object Plotter {
   var defaultRenderer = "Swing"
-  val defaultTitle = "Scala Plot"
+  val defaultTitle = "plot4s"
   var defaultToRaw = false
 
   def apply(xs: (PlotConst, Any)*): Plotter = Plotter(xs)

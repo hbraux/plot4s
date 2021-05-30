@@ -1,7 +1,7 @@
-package fr.braux.splot
+package fr.braux.plot4s
 
 
-import fr.braux.splot.Plotdef._
+import fr.braux.plot4s.Plotdef._
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW._
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -79,13 +79,15 @@ case class OpenGLRenderer private (title: String, width: Int, height: Int, backg
 
   override def useTexture(t: GlTexture): Unit = {}
 
-  override def getRaw: Array[Byte] = throw new NotImplementedError("not supported")
+  override def getRaw: Array[Byte] = throw new NotImplementedError("not supported yet")
 
-  override def image(img: BufferedImage): Unit =  throw new NotImplementedError("not supported")
+  override def image(img: BufferedImage): Unit =  throw new NotImplementedError("not supported yet")
+
+  override def setTitle(title: String): Unit = throw new NotImplementedError("not supported yet")
 }
 
 object OpenGLRenderer extends RendererFactory {
-  override val defaultSize: Int = 240
+  override val defaultSize: Int = 480
   override val defaultBackground: Color = Color.black
 
   private lazy val logger = LoggerFactory.getLogger(getClass)
