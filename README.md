@@ -1,1 +1,1 @@
-# scala-plot
+# plot4s
