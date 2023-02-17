@@ -5,6 +5,8 @@
 
 A smart high-level graphic API for Scala (and Java) able to render any *plottable* Object from a single method call.
 
+This project is DRAFT EXPERIMENTAL
+
 ## A quick example
 
 Rendering the [Manderbrot Set](https://en.wikipedia.org/wiki/Mandelbrot_set) with a few lines of code:
