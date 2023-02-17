@@ -5,7 +5,7 @@
 
 A smart high-level graphic API for Scala (and Java) able to render any *plottable* Object from a single method call.
 
-Supported rendering: Swaning, OpenGL, Console
+Supported rendering: Swing, OpenGL, Console
 
 This project is DRAFT EXPERIMENTAL
 
