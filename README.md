@@ -5,6 +5,8 @@
 
 A smart high-level graphic API for Scala (and Java) able to render any *plottable* Object from a single method call.
 
+Supported rendering: Swaning, OpenGL, Console
+
 This project is DRAFT EXPERIMENTAL
 
 ## A quick example
@@ -28,11 +30,3 @@ object Mandelbrot extends App with Plotting {
 
 The plotting API supports key binding and implements natively zooming (page up/down) and moving (arrows)
 
-## Features
-
-
-## Examples
-
-* Scala
-
-## Design
